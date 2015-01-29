@@ -2,11 +2,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Sockets;
+using System;
 
 public class WebApiConsulter : MonoBehaviour
 {
-
-		private string filePath = @"Assets\Input\skeleton.txt";
 		private Quaternion tposeSpineMid;
 		private Quaternion tposeNeck;
 		private Quaternion tposeHead;
@@ -16,12 +16,13 @@ public class WebApiConsulter : MonoBehaviour
 		private Quaternion tposeRightShoulder;
 		private Quaternion tposeRightElbow;
 		private Quaternion tposeRightWrist;
-		private StreamReader inp_stm;
-		private int sleep = 0;
+		private NetworkStream serverStream;
 
 		void Start ()
 		{
-				inp_stm = new StreamReader (filePath);
+				System.Net.Sockets.TcpClient clientSocket = new System.Net.Sockets.TcpClient ();
+				clientSocket.Connect ("127.0.0.1", 8888);
+				serverStream = clientSocket.GetStream ();
 
 				foreach (GameObject g in GameObject.FindGameObjectsWithTag("SpineMid")) {
 						tposeSpineMid = g.transform.rotation;
@@ -57,22 +58,30 @@ public class WebApiConsulter : MonoBehaviour
 				foreach (GameObject g in GameObject.FindGameObjectsWithTag("RightElbow")) {
 						tposeRightElbow = g.transform.rotation;
 				}
-
-		}
 		
-
+		}
+	
+	
 		// Update is called once per frame
 		void Update ()
 		{
-				sleep++;
-				if (sleep % 5 != 0)
+				if (!serverStream.DataAvailable) {
+						// No new data
 						return;
+				}
+				byte[] skeletonBuffer = null;
+				// Iterate until I get the most recent data
+				while (serverStream.DataAvailable) {
+						byte[] lengthBuffer = new byte[4];
+						serverStream.Read (lengthBuffer, 0, 4);
+						int length = BitConverter.ToInt32 (lengthBuffer, 0);
+						skeletonBuffer = new byte[length];
+						serverStream.Read (skeletonBuffer, 0, length);
+				}
+				string returndata = System.Text.Encoding.ASCII.GetString (skeletonBuffer);
+
+				Dictionary<int, string> dict = readTextFile (returndata);
 				try {
-						Dictionary<int, string> dict = readTextFile (filePath);
-						if (dict == null){
-							Debug.Log("FINISHED");
-							return;
-						}
 						foreach (GameObject g in GameObject.FindGameObjectsWithTag("SpineMid")) {
 								setRotation (g, dict [(int)JointType.SpineMid], tposeSpineMid);
 						}
@@ -96,7 +105,7 @@ public class WebApiConsulter : MonoBehaviour
 						foreach (GameObject g in GameObject.FindGameObjectsWithTag("LeftWrist")) {
 								setRotation (g, dict [(int)JointType.WristLeft], tposeLeftWrist);
 						}
-
+			
 						foreach (GameObject g in GameObject.FindGameObjectsWithTag("RightShoulder")) {
 								setRotation (g, dict [(int)JointType.ShoulderRight], tposeRightShoulder);
 						}
@@ -108,62 +117,58 @@ public class WebApiConsulter : MonoBehaviour
 						foreach (GameObject g in GameObject.FindGameObjectsWithTag("RightWrist")) {
 								setRotation (g, dict [(int)JointType.WristRight], tposeRightWrist);
 						}
-
+			
 				} catch (IOException) {
 						//Ignore
 				}
 		}
-
+	
 		// TPOSe unity Quaternion
-//		void setRotation (GameObject obj, string val, Quaternion startRotation, Vector3 startChange)
+		//		void setRotation (GameObject obj, string val, Quaternion startRotation, Vector3 startChange)
 		void setRotation (GameObject obj, string val, Quaternion startRotation)
 		{
 				string[] quaternions = val.Split ('#');
 				Quaternion start = getQuaternion (quaternions [0]); // TPOSE Kinect Quaternion
 				Quaternion current = getQuaternion (quaternions [1]); // CURRENT Kinesct Quaternion
 				Quaternion inputRelative = Quaternion.Inverse (start) * current; // Relative rotation Kinect Quaternion
+				//Quaternion inputRelative = current * Quaternion.Inverse(start);
 		
 				Quaternion relative = startRotation * inputRelative;
-
-				obj.transform.rotation = relative;
-				
+		
+				obj.transform.rotation = Quaternion.Slerp (obj.transform.rotation, relative, Time.time * .1f);
 		}
-
+	
 		Quaternion getQuaternion (string val)
 		{
 				string[] values = val.Split ('|');
 				Quaternion quat = new Quaternion ();
-				quat.x = float.Parse (values [0]);
-				quat.y = float.Parse (values [1]);
+				quat.x = float.Parse (values [1]);
+				quat.y = float.Parse (values [0]);
 				quat.z = float.Parse (values [2]);
 				quat.w = float.Parse (values [3]);
 				return quat;
 		}
 	
 		// Parses the file and returns a structure of (int)id -> (string)"a|b|c|d" where a,b,c,d are floats from the quaternion
-		Dictionary<int, string> readTextFile (string file_path)
+		Dictionary<int, string> readTextFile (string streamString)
 		{
 				Dictionary<int, string> dictionary = new Dictionary<int, string> ();
-				if (inp_stm.EndOfStream) {
-						return null;
-				}
 
-				//Hashtable ht = new Hashtable ();
-//				StreamReader inp_stm = new StreamReader (file_path);
-				int i = 0;
-				//				while (!inp_stm.EndOfStream) {
-				while (i < 20) {
-						string inp_ln = inp_stm.ReadLine ();
+				Debug.Log (streamString);
+				string[] stream = streamString.Split ('\n');
+				//Debug.Log ("LINES: " + stream.Length);
+					//	Ignoring empty line at the end :)
+				for (int i = 0; i < stream.Length - 1; i++) {
+						string inp_ln = stream [i];
+						//Debug.Log ("PARSING: " + inp_ln);
 						string keys = inp_ln.Split ('*') [0];
 						string values = inp_ln.Split ('*') [1];
 						dictionary.Add (int.Parse (keys), values);
-						i++;
 				}
 		
-//				inp_stm.Close ();
 				return dictionary;
 		}
-
+	
 		public enum JointType
 		{
 				AnkleLeft =	14,

@@ -6,6 +6,11 @@ using System.Net.Http;
 using System.Web.Http;
 using Microsoft.Kinect;
 using System.Diagnostics;
+using System.Text;
+using System.Net.Sockets;
+using System.IO;
+using System.Collections.Concurrent;
+using System.Threading;
 
 namespace KinectWebApi.Controllers
 {
@@ -50,12 +55,21 @@ namespace KinectWebApi.Controllers
         private static DateTime startTime;
         private static Skeleton tposeSkeleton;
         private static Skeleton[] tposeSamples = new Skeleton[100];
-        private static int index = 0;
+
+        private static ConcurrentBag<NetworkStream> listenerStreams = new ConcurrentBag<NetworkStream>();
+        private static bool flag = true;
 
         public static void init()
         {
+            //Remove this horrible flag, I don't know why it calls init twice :S
+            if(!flag)
+            {
+                return;
+            }
+            flag = false;
             Debug.WriteLine("SETTING UP KINECT");
             setBasicSkeleton();
+            setUpSocket();
             foreach (var potentialSensor in KinectSensor.KinectSensors)
             {
                 if (potentialSensor.Status == KinectStatus.Connected)
@@ -87,10 +101,44 @@ namespace KinectWebApi.Controllers
             startTime = DateTime.Now;
         }
 
-        /// Event handler for Kinect sensor's SkeletonFrameReady event
-        /// </summary>
-        /// <param name="sender">object sending the event</param>
-        /// <param name="e">event arguments</param>
+        private class ThreadServer
+        {
+            private TcpListener serverSocket;
+            private ConcurrentBag<NetworkStream> listenerStreams;
+
+            public ThreadServer(TcpListener serverSocket, ConcurrentBag<NetworkStream> listenerStreams)
+            {
+                this.serverSocket = serverSocket;
+                this.listenerStreams = listenerStreams;
+            }
+
+            public void run()
+            {
+                while (true)
+                {
+                    TcpClient clientSocket = default(TcpClient);
+                    //Locking in accept, waiting to get a new client
+                    clientSocket = serverSocket.AcceptTcpClient();
+                    Debug.WriteLine(" >> Accept connection from client");
+                    NetworkStream networkStream = clientSocket.GetStream();
+                    //Added it to the list of streams I'm communicating with
+                    listenerStreams.Add(networkStream);
+                }
+            }
+        }
+
+
+        private static void setUpSocket()
+        {
+            Debug.WriteLine("SETTING UP SOCKET");
+            TcpListener serverSocket = new TcpListener(8888);
+            serverSocket.Start();
+            Debug.WriteLine(" >> Server Started");
+            Thread thread = new Thread(new ThreadStart(new ThreadServer(serverSocket, listenerStreams).run));
+            thread.Start();
+        }
+
+
         private static void SensorSkeletonFrameReady(object sender, SkeletonFrameReadyEventArgs e)
         {
             Skeleton[] skeletons = new Skeleton[0];
@@ -106,7 +154,6 @@ namespace KinectWebApi.Controllers
             {
                 if (skel.TrackingState == SkeletonTrackingState.Tracked)
                 {
-                    //Debug.WriteLine("Fixed skeleton");
                     fixSkeleton(skel);
                     return;
                 }
@@ -118,7 +165,7 @@ namespace KinectWebApi.Controllers
             lastUpdate = DateTime.Now;
             actualSkeleton = skeleton;
 
-            if (startTime.AddSeconds(15) > DateTime.Now)
+            if (startTime.AddSeconds(5) > DateTime.Now)
             {
                 Debug.WriteLine("WAITING");
                 return; // At start, not serializing
@@ -130,21 +177,7 @@ namespace KinectWebApi.Controllers
                 tposeSkeleton = skeleton;
             }
 
-            if (index < 100)
-            {
-                Debug.WriteLine("Sampling...");
-                tposeSamples[index] = skeleton;
-                index++;
-            }
             Array types = Enum.GetValues(typeof(JointType));
-            if(index == 100)
-            {
-                foreach (JointType type in types)
-                {
-                    printVariation(type);
-                }
-                index++;
-            }
 
             string[] lines = new string[types.Length];
             int i = 0;
@@ -153,72 +186,48 @@ namespace KinectWebApi.Controllers
                 lines[i++] = getFileFormat(type);
             }
 
-            while (true)
+            informListeners(lines);
+
+        }
+
+        private static void informListeners(string[] lines)
+        {
+            List<NetworkStream> fuckedStreams = new List<NetworkStream>();
+            foreach(NetworkStream stream in listenerStreams)
             {
                 try
                 {
-                    System.IO.File.WriteAllLines(@"C:\Users\sheetah\Documents\skeleton.txt", lines);
-                    return;
+                    StringBuilder all = new StringBuilder();
+                    foreach (string line in lines)
+                    {
+                        all.AppendLine(line);
+                    }
+                    // Communication protocol: serialize the skeleton
+                    // Send the size of the package first (packages have variable size)
+                    // Send the serialized skeleton afterwards
+
+                    Byte[] sendBytes = Encoding.ASCII.GetBytes(all.ToString());
+                    Debug.WriteLine("SENDING to: " + stream + "length: " + sendBytes.Length);
+                    Byte[] length = BitConverter.GetBytes(sendBytes.Length);
+                    stream.Write(length, 0, length.Length);
+                    Debug.WriteLine("LENGTH LENGTH IS :" + length.Length);
+                    stream.Write(sendBytes, 0, sendBytes.Length);
+                    stream.Flush();
                 }
-                catch (Exception)
+                catch (IOException)
                 {
-                    //Ignore
+                    //IOException can happen for multiple reasons, but basically, that channel
+                    //has problems and I don't want it, kicking it out. If you want to reconnect,
+                    //just get a new one.
+                    fuckedStreams.Add(stream);
                 }
             }
-        }
-
-        private static void printVariation(JointType type)
-        {
-            float maxX = -10000, maxY = -1000, maxZ = -1000, maxW = -1000;
-            float minX = 10000, minY = 1000, minZ = 1000, minW = 1000;
-            float sumX = 0, sumY = 0, sumZ = 0, sumW = 0;
-            for(int i = 0; i < 100; i++)
+            foreach (NetworkStream stream in fuckedStreams)
             {
-                Vector4 quat = getPosition((int)type, tposeSamples[i]);
-                sumX += quat.X;
-                sumY += quat.Y;
-                sumZ += quat.Z;
-                sumW += quat.W;
-                if (quat.X > maxX)
-                {
-                    maxX = quat.X;
-                }
-                if (quat.Y > maxY)
-                {
-                    maxY = quat.Y;
-                }
-                if (quat.Z > maxZ)
-                {
-                    maxZ = quat.Z;
-                }
-                if (quat.W > maxW)
-                {
-                    maxW = quat.W;
-                }
-
-                if (quat.X < minX)
-                {
-                    minX = quat.X;
-                }
-                if (quat.Y < minY)
-                {
-                    minY = quat.Y;
-                }
-                if (quat.Z < minZ)
-                {
-                    minZ = quat.Z;
-                }
-                if (quat.W < minW)
-                {
-                    minW = quat.W;
-                }
+                NetworkStream temp = stream;
+                temp.Dispose();
+                listenerStreams.TryTake(out temp);
             }
-            Debug.WriteLine("--- STATS FOR JOINT: " + type);
-            Debug.WriteLine("-> X : " + (sumX / 100) + " min:" + minX + "#" + ((((sumX / 100) - minX) * 100)) / (sumX / 100) + "%" + " max:" + maxX + "#" + (((maxX - (sumX / 100)) * 100)) / (sumX / 100) + "%");
-            Debug.WriteLine("-> Y : " + (sumY / 100) + " min:" + minY + "#" + ((((sumY / 100) - minY) * 100)) / (sumY / 100) + "%" + " max:" + maxY + "#" + (((maxY - (sumY / 100)) * 100)) / (sumY / 100) + "%");
-            Debug.WriteLine("-> Z : " + (sumZ / 100) + " min:" + minZ + "#" + ((((sumZ / 100) - minZ) * 100)) / (sumZ / 100) + "%" + " max:" + maxZ + "#" + (((maxZ - (sumZ / 100)) * 100)) / (sumZ / 100) + "%");
-            Debug.WriteLine("-> W : " + (sumW / 100) + " min:" + minW + "#" + ((((sumW / 100) - minW) * 100)) / (sumW / 100) + "%" + " max:" + maxW + "#" + (((maxW - (sumW / 100)) * 100)) / (sumW / 100) + "%");
-            Debug.WriteLine("--- --------------- ");
         }
 
         private static string getFileFormat(JointType type)
