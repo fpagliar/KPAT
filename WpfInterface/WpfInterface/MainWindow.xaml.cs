@@ -44,9 +44,48 @@ namespace WpfInterface
                 sensor.ColorFrameReady += Sensor_ColorFrameReady;
                 sensor.SkeletonFrameReady += Sensor_SkeletonFrameReady;
 
+
+                VoiceController voiceController = new VoiceController();
+                voiceController.SpeechRecognized += Recognizer_SpeechRecognized;
+                voiceController.SpeechHypothesized += Recognizer_SpeechHypothezised;
+                voiceController.SpeechDetected += Recognizer_SpeechDetected;
+                voiceController.SpeechRejected += Recognizer_SpeechRejected;
+                voiceController.RecognitionConfidence = 0.50;
+
+                List<String> phrases = new List<string>();
+                phrases.Add("OK KINECT, START RECORDING");
+                phrases.Add("SHUTDOWN");
+                phrases.Add("STOP");
                 sensor.Start();
+                
+                voiceController.StartRecognition(sensor, phrases);
+                Debug.WriteLine("RECOGNITION STARTED");
             }
         }
+
+        #region VoiceRecognition
+
+        void Recognizer_SpeechRecognized(object sender, Microsoft.Speech.Recognition.SpeechRecognizedEventArgs e)
+        {
+            speechRecognized.Text = e.Result.Text + "\n" + e.Result.Confidence;
+        }
+
+        void Recognizer_SpeechHypothezised(object sender, Microsoft.Speech.Recognition.SpeechHypothesizedEventArgs e)
+        {
+            speechHypothezised.Text = e.Result.Text + "\n" + e.Result.Confidence;
+        }
+
+        void Recognizer_SpeechDetected(object sender, Microsoft.Speech.Recognition.SpeechDetectedEventArgs e)
+        {
+            speechDetected.Text = e.AudioPosition.ToString();
+        }
+
+        void Recognizer_SpeechRejected(object sender, Microsoft.Speech.Recognition.SpeechRecognitionRejectedEventArgs e)
+        {
+            speechRejected.Text = e.Result.Text + "\n" + e.Result.Confidence;
+        }
+
+        #endregion
 
         void Sensor_ColorFrameReady(object sender, ColorImageFrameReadyEventArgs e)
         {
