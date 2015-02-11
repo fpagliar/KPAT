@@ -1,0 +1,19 @@
+﻿<Window x:Class="WpfInterface.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MainWindow" Height="350" Width="525">
+    <Grid Width="500" Height="300">
+        <Image x:Name="MainImage" HorizontalAlignment="Center" Height="300" Margin="2,6,15,13" VerticalAlignment="Center" Width="500" RenderTransformOrigin="0.5,0.5">
+            <Image.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform/>
+                    <SkewTransform/>
+                    <RotateTransform Angle="-0.23"/>
+                    <TranslateTransform/>
+                </TransformGroup>
+            </Image.RenderTransform>
+        </Image>
+        <Canvas x:Name="skeletonCanvas" HorizontalAlignment="Center" Height="300" Margin="10,19,0,0" VerticalAlignment="Center" Width="500"/>
+
+    </Grid>
+</Window>
