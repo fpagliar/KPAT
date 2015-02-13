@@ -18,6 +18,7 @@ using System.Net.Sockets;
 using System.IO;
 using System.Collections.Concurrent;
 using System.Threading;
+using System.ComponentModel;
 
 namespace WpfInterface
 {
@@ -27,13 +28,23 @@ namespace WpfInterface
     public partial class MainWindow : Window
     {
         private static ConcurrentBag<NetworkStream> listenerStreams = new ConcurrentBag<NetworkStream>();
+        private static SkeletonRecorder recorder = new SkeletonRecorder(recordingTag);
+        private static SkeletonRecorder replayer = new SkeletonRecorder(replayingTag);
+        private static VoiceController voiceController;
+        private static KinectSensor sensor;
+
+        private static bool recording = false;
+        private static bool playing = false;
+        private static bool replaying = false;
+        private static string recordingTag = "recording";
+        private static string replayingTag = "replaying";
 
         public MainWindow()
         {
             InitializeComponent();
             setUpSocket();
 
-            KinectSensor sensor = KinectSensor.KinectSensors.Where(s => s.Status == KinectStatus.Connected).FirstOrDefault();
+            sensor = KinectSensor.KinectSensors.Where(s => s.Status == KinectStatus.Connected).FirstOrDefault();
 
             if (sensor != null)
             {
@@ -45,7 +56,7 @@ namespace WpfInterface
                 sensor.SkeletonFrameReady += Sensor_SkeletonFrameReady;
 
 
-                VoiceController voiceController = new VoiceController();
+                voiceController = new VoiceController();
                 voiceController.SpeechRecognized += Recognizer_SpeechRecognized;
                 voiceController.SpeechHypothesized += Recognizer_SpeechHypothezised;
                 voiceController.SpeechDetected += Recognizer_SpeechDetected;
@@ -61,6 +72,21 @@ namespace WpfInterface
                 voiceController.StartRecognition(sensor, phrases);
                 Debug.WriteLine("RECOGNITION STARTED");
             }
+
+            // Adding the joints I want to track
+            SkeletonUtils.addJoint(JointType.ShoulderLeft);
+            SkeletonUtils.addJoint(JointType.ShoulderRight);
+            SkeletonUtils.addJoint(JointType.ElbowLeft);
+            SkeletonUtils.addJoint(JointType.ElbowRight);
+            SkeletonUtils.addJoint(JointType.WristLeft);
+            SkeletonUtils.addJoint(JointType.WristRight);
+
+        }
+
+        void MainWindow_Closing(object sender, CancelEventArgs e)
+        {   
+            voiceController.StopRecognition();
+            sensor.Stop();
         }
 
         #region VoiceRecognition
@@ -82,7 +108,7 @@ namespace WpfInterface
 
         void Recognizer_SpeechRejected(object sender, Microsoft.Speech.Recognition.SpeechRecognitionRejectedEventArgs e)
         {
-            speechRejected.Text = e.Result.Text + "\n" + e.Result.Confidence;
+            //speechRejected.Text = e.Result.Text + "\n" + e.Result.Confidence;
         }
 
         #endregion
@@ -109,16 +135,107 @@ namespace WpfInterface
                     skeletonFrame.CopySkeletonDataTo(skeletons);
                 }
             }
-            DrawingUtils.ClearSkeletons(skeletonCanvas);
-            foreach(Skeleton skel in skeletons)
+
+            if (recording)
             {
+                recorder.add(skeletons.Where(s => s.TrackingState == SkeletonTrackingState.Tracked).FirstOrDefault());
+            }
+
+            if(playing)
+            {
+                DrawingUtils.deleteElements(skeletonCanvas, recordingTag);
+                SkeletonUtils.DrawSkeleton(skeletonCanvas, recorder.next(), Colors.Black, recordingTag);
+            }
+
+            if (replaying)
+            {
+                if (replayer.finished())
+                {
+                    replayer.restart();
+                }
+                DrawingUtils.deleteElements(skeletonCanvas, replayingTag);
+                SkeletonUtils.DrawSkeleton(skeletonCanvas, replayer.next(), Colors.Blue, replayingTag);
+            }
+
+
+            foreach (Skeleton skel in skeletons)
+            {
+                DrawingUtils.deleteElements(skeletonCanvas, skel.TrackingId.ToString());
                 if (skel.TrackingState == SkeletonTrackingState.Tracked)
                 {
-                    DrawingUtils.DrawSkeleton(skeletonCanvas, skel);
+                    SkeletonUtils.DrawSkeleton(skeletonCanvas, skel, Colors.Cyan, skel.TrackingId.ToString());
                     fixSkeleton(skel);
                 }
-            }            
+            }
         }
+
+        #region Button Actions
+
+        private void RecordingButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (recording)
+            {
+                // I was recording, I will now stop it
+                recording = false;
+                RecordingButton.Content = "Start recording";
+            }
+            else
+            {
+                // I was not recording, I will now start recording
+                recording = true;
+                recorder = new SkeletonRecorder(recordingTag);
+                RecordingButton.Content = "Stop recording";
+            }
+        }
+
+        private void PlayButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (playing)
+            {
+                // I was playing, I will now stop it
+                playing= false;
+                recorder.restart();
+                PlayButton.Content = "Play";
+            }
+            else
+            {
+                // I was stopped, I will now start playing
+                playing = true;
+                recording = false;
+                PlayButton.Content = "Stop";
+            }
+        }
+
+        private void SaveButton_Click(object sender, RoutedEventArgs e)
+        {
+            Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog();
+            if (dlg.ShowDialog() == true)
+            {
+                recorder.saveToFile(dlg.FileName);
+            }
+
+        }
+
+        private void LoadButton_Click(object sender, RoutedEventArgs e)
+        {
+            Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
+            if (dlg.ShowDialog() == true)
+            {
+                replayer.loadFromFile(dlg.FileName);
+                replaying = true;
+            }
+
+        }
+
+        private void CompareButton_Click(object sender, RoutedEventArgs e)
+        {
+            bool ans = SkeletonUtils.match(recorder, replayer);
+            float diff = SkeletonUtils.difference(recorder, replayer);
+            speechRejected.Text = "ANS: " + ans + " differece: " + diff + " in " + recorder.size() + " frames" +
+                " vs " + replayer.size() + " frames";
+        }
+
+        #endregion
 
         #region ThreadServer
 
@@ -161,36 +278,21 @@ namespace WpfInterface
 
         private static void fixSkeleton(Skeleton skeleton)
         {
-            Array types = Enum.GetValues(typeof(JointType));
-
-            string[] lines = new string[types.Length + 1];
-            lines[0] = "SKELETON:" + skeleton.TrackingId + " -> " + skeleton.TrackingState;
-            int i = 1;
-            foreach (JointType type in types)
-            {
-                lines[i++] = getFileFormat(type, skeleton);
-            }
-
-            informListeners(lines);
+            informListeners(SkeletonUtils.toString(skeleton).ToString());
         }
 
-        private static void informListeners(string[] lines)
+        private static void informListeners(string lines)
         {
             List<NetworkStream> fuckedStreams = new List<NetworkStream>();
             foreach (NetworkStream stream in listenerStreams)
             {
                 try
                 {
-                    StringBuilder all = new StringBuilder();
-                    foreach (string line in lines)
-                    {
-                        all.AppendLine(line);
-                    }
                     // Communication protocol: serialize the skeleton
                     // Send the size of the package first (packages have variable size)
                     // Send the serialized skeleton afterwards
 
-                    Byte[] sendBytes = Encoding.ASCII.GetBytes(all.ToString());
+                    Byte[] sendBytes = Encoding.ASCII.GetBytes(lines);
                     //Debug.WriteLine("SENDING to: " + stream + "length: " + sendBytes.Length);
                     Byte[] length = BitConverter.GetBytes(sendBytes.Length);
                     stream.Write(length, 0, length.Length);
@@ -216,17 +318,5 @@ namespace WpfInterface
 
         #endregion
 
-        private static string getFileFormat(JointType type, Skeleton skeleton)
-        {
-            Vector4 actualPos = getPosition(type, skeleton);
-
-            return type + " + " + skeleton.Joints[type].TrackingState + " -> " + 
-                actualPos.X + "|" + actualPos.Y + "|" + actualPos.Z + "|" + actualPos.W;
-        }
-
-        public static Vector4 getPosition(JointType type, Skeleton skel)
-        {
-            return skel.BoneOrientations[type].HierarchicalRotation.Quaternion;
-        }
     }
 }

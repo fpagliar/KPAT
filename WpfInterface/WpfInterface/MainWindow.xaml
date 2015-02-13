@@ -3,7 +3,11 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="MainWindow" Height="350" Width="899.3">
     <Grid Width="500" Height="300">
-        <Image x:Name="MainImage" HorizontalAlignment="Center" Height="300" Margin="0,-4,0,4" VerticalAlignment="Center" Width="500" RenderTransformOrigin="0.5,0.5">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="77*"/>
+            <ColumnDefinition Width="173*"/>
+        </Grid.ColumnDefinitions>
+        <Image x:Name="MainImage" HorizontalAlignment="Center" Height="300" Margin="0,-4,0,4" VerticalAlignment="Center" Width="500" RenderTransformOrigin="0.5,0.5" Grid.ColumnSpan="2">
             <Image.RenderTransform>
                 <TransformGroup>
                     <ScaleTransform/>
@@ -13,10 +17,15 @@
                 </TransformGroup>
             </Image.RenderTransform>
         </Image>
-        <Canvas x:Name="skeletonCanvas" HorizontalAlignment="Center" Height="300" VerticalAlignment="Center" Width="500"/>
-        <TextBox x:Name="speechRecognized" HorizontalAlignment="Left" Height="46" Margin="540,10,-160,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="120"/>
-        <TextBox x:Name="speechHypothezised" HorizontalAlignment="Left" Height="37" Margin="540,78,-160,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="120"/>
-        <TextBox x:Name="speechDetected" HorizontalAlignment="Left" Height="37" Margin="540,134,-160,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="120"/>
-        <TextBox x:Name="speechRejected" HorizontalAlignment="Left" Height="37" Margin="540,195,-160,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="120"/>
+        <Canvas x:Name="skeletonCanvas" HorizontalAlignment="Center" Height="300" VerticalAlignment="Center" Width="500" Grid.ColumnSpan="2"/>
+        <TextBox x:Name="speechRecognized" HorizontalAlignment="Left" Height="46" Margin="386,10,-160,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="120" Grid.Column="1"/>
+        <TextBox x:Name="speechHypothezised" HorizontalAlignment="Left" Height="37" Margin="386,78,-160,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="120" Grid.Column="1"/>
+        <TextBox x:Name="speechDetected" HorizontalAlignment="Left" Height="37" Margin="386,134,-160,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="120" Grid.Column="1"/>
+        <TextBox x:Name="speechRejected" HorizontalAlignment="Left" Height="37" Margin="386,195,-160,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="120" Grid.Column="1"/>
+        <Button x:Name="RecordingButton" Content="Start Recording" HorizontalAlignment="Left" Margin="-163,10,0,0" VerticalAlignment="Top" Width="98" Height="52" Click="RecordingButton_Click"/>
+        <Button x:Name="PlayButton" Content="Play" HorizontalAlignment="Left" Margin="-163,84,0,0" VerticalAlignment="Top" Width="98" Height="52" Click="PlayButton_Click"/>
+        <Button x:Name="SaveButton" Content="Save" HorizontalAlignment="Left" Margin="-163,155,0,0" VerticalAlignment="Top" Width="98" Height="52" Click="SaveButton_Click"/>
+        <Button x:Name="LoadButton" Content="Load" HorizontalAlignment="Left" Margin="-163,226,0,0" VerticalAlignment="Top" Width="98" Height="52" Click="LoadButton_Click"/>
+        <Button x:Name="CompareButton" Content="Compare" HorizontalAlignment="Left" Margin="386,248,-138,0" VerticalAlignment="Top" Width="98" Height="52" Click="CompareButton_Click" Grid.Column="1"/>
     </Grid>
 </Window>
