@@ -318,7 +318,6 @@ namespace WpfInterface
 
             safeOriginal.restart();
             safeImitation.restart();
-
             while (!safeOriginal.finished())
             {
                 Skeleton orig = safeOriginal.next();

@@ -30,6 +30,11 @@ namespace WpfInterface
         private static ConcurrentBag<NetworkStream> listenerStreams = new ConcurrentBag<NetworkStream>();
         private static SkeletonRecorder recorder = new SkeletonRecorder(recordingTag);
         private static SkeletonRecorder replayer = new SkeletonRecorder(replayingTag);
+
+        private static SkeletonRecorder stream;
+        private static SkeletonRecorder bestReproduction;
+        private static double bestReproductionDiff = 1000;
+
         private static VoiceController voiceController;
         private static KinectSensor sensor;
 
@@ -38,6 +43,8 @@ namespace WpfInterface
         private static bool replaying = false;
         private static string recordingTag = "recording";
         private static string replayingTag = "replaying";
+        private static string streamTag = "stream";
+        private static string bestReproductionTag = "bestReproduction";
 
         public MainWindow()
         {
@@ -135,10 +142,10 @@ namespace WpfInterface
                     skeletonFrame.CopySkeletonDataTo(skeletons);
                 }
             }
-
+            Skeleton defaultSkeleton = skeletons.Where(s => s.TrackingState == SkeletonTrackingState.Tracked).FirstOrDefault();
             if (recording)
             {
-                recorder.add(skeletons.Where(s => s.TrackingState == SkeletonTrackingState.Tracked).FirstOrDefault());
+                recorder.add(defaultSkeleton);
             }
 
             if(playing)
@@ -155,6 +162,22 @@ namespace WpfInterface
                 }
                 DrawingUtils.deleteElements(skeletonCanvas, replayingTag);
                 SkeletonUtils.DrawSkeleton(skeletonCanvas, replayer.next(), Colors.Blue, replayingTag);
+                stream.add(defaultSkeleton);
+                if (stream.size() == replayer.size())
+                {
+                    float diff = SkeletonUtils.difference(stream, replayer);
+                    bestDiff.Text = "Best diff: " + bestReproductionDiff + " current: " + diff ;
+                    if (bestReproductionDiff > diff)
+                    {
+                        bestReproductionDiff = diff;
+                        bestReproduction = new SkeletonRecorder(stream);
+                    }                    
+                }
+                if (bestReproduction != null)
+                {
+                    DrawingUtils.deleteElements(skeletonCanvas, bestReproductionTag);
+                    SkeletonUtils.DrawSkeleton(skeletonCanvas, bestReproduction.next(), Colors.Pink, bestReproductionTag);
+                }
             }
 
 
@@ -193,7 +216,7 @@ namespace WpfInterface
             if (playing)
             {
                 // I was playing, I will now stop it
-                playing= false;
+                playing = false;
                 recorder.restart();
                 PlayButton.Content = "Play";
             }
@@ -223,6 +246,7 @@ namespace WpfInterface
             {
                 replayer.loadFromFile(dlg.FileName);
                 replaying = true;
+                stream = new SkeletonRecorder(streamTag, replayer.size());
             }
 
         }
@@ -234,6 +258,15 @@ namespace WpfInterface
             speechRejected.Text = "ANS: " + ans + " differece: " + diff + " in " + recorder.size() + " frames" +
                 " vs " + replayer.size() + " frames";
         }
+        private void SaveBestButton_Click(object sender, RoutedEventArgs e)
+        {
+            Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog();
+            if (dlg.ShowDialog() == true)
+            {
+                bestReproduction.saveToFile(dlg.FileName);
+            }
+        }
+
 
         #endregion
 
