@@ -19,6 +19,9 @@ namespace WpfInterface
         private static float delta = 2000f;
         private static float deltaAccum = 20000f;
 
+        private static int screenWidth = 500;
+        private static int screenHeight = 300;
+
         private static List<JointType> targetJoints = new List<JointType>();
         private static List<Tuple<JointType, JointType>> connections = setUpConnections();
 
@@ -88,17 +91,7 @@ namespace WpfInterface
 
         #region Scaling methods
 
-        public static Skeleton ScaleTo(Skeleton skel, double width, double height)
-        {
-            Skeleton scaled = new Skeleton();
-            foreach (JointType type in Enum.GetValues(typeof(JointType)))
-            {
-                ScaleTo(scaled.Joints[type], width, height);
-            }
-            return scaled;
-        }
-
-        private static Joint ScaleTo(Joint joint, double width, double height)
+        public static Joint ScaleTo(Joint joint, double width, double height)
         {
             return ScaleTo(joint, width, height, 1.0f, 1.0f);
         }
@@ -173,24 +166,31 @@ namespace WpfInterface
 
         public static void DrawSkeleton(Canvas canvas, Skeleton skeleton, Color color, String tag)
         {
+
             if (skeleton == null)
             {
                 return;
             }
             // TODO: mark with different colors the infered joints
             // TODO: skip the joints not in targetJoints?
-
             foreach (Joint joint in skeleton.Joints)
             {
-                DrawingUtils.DrawPoint(canvas, new Point { X = joint.Position.X, Y = joint.Position.Y }, color, tag);
+                Joint scaledJoint = ScaleTo(joint, screenWidth, screenHeight);
+                DrawingUtils.DrawPoint(canvas, new Point { X = scaledJoint.Position.X, Y = scaledJoint.Position.Y }, color, tag);
             }
 
             foreach (Tuple<JointType, JointType> tuple in getAllConnections())
             {
-                DrawingUtils.DrawLine(canvas, new Point { X = skeleton.Joints[tuple.Item1].Position.X, 
-                    Y = skeleton.Joints[tuple.Item1].Position.Y }, 
-                new Point { X = skeleton.Joints[tuple.Item2].Position.X, 
-                    Y = skeleton.Joints[tuple.Item2].Position.Y }, color, tag);
+                DrawingUtils.DrawLine(canvas, new Point
+                {
+                    X = ScaleTo(skeleton.Joints[tuple.Item1], screenWidth, screenHeight).Position.X,
+                    Y = ScaleTo(skeleton.Joints[tuple.Item1], screenWidth, screenHeight).Position.Y
+                },
+                new Point
+                {
+                    X = ScaleTo(skeleton.Joints[tuple.Item2], screenWidth, screenHeight).Position.X,
+                    Y = ScaleTo(skeleton.Joints[tuple.Item2], screenWidth, screenHeight).Position.Y
+                }, color, tag);
             }
         }
 
