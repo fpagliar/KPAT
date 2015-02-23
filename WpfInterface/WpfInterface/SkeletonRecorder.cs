@@ -42,6 +42,10 @@ namespace WpfInterface
 
         public void add(Skeleton skel)
         {
+            if (skel == null)
+            {
+                throw new Exception("Cannot add null to a recorder!");
+            }
             if (immutable)
             {
                 return;
@@ -68,12 +72,8 @@ namespace WpfInterface
             if (!end)
             {
                 last = index.Current;
-                return index.Current;
             }
-            else
-            {
-                return last;
-            }
+            return last;
         }
 
         public void restart()
@@ -89,6 +89,19 @@ namespace WpfInterface
         public bool finished()
         {
             return end;
+        }
+
+        public IEnumerator<Skeleton> getEnum()
+        {
+            return skeletons.GetEnumerator();
+        }
+        public List<Skeleton> getList()
+        {
+            List<Skeleton> ans = new List<Skeleton>();
+            foreach(Skeleton skel in skeletons){
+                ans.Add(skel);
+            }
+            return ans;
         }
 
         public void saveToFile(string filePath)
