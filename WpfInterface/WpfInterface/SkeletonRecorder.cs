@@ -91,19 +91,6 @@ namespace WpfInterface
             return end;
         }
 
-        public IEnumerator<Skeleton> getEnum()
-        {
-            return skeletons.GetEnumerator();
-        }
-        public List<Skeleton> getList()
-        {
-            List<Skeleton> ans = new List<Skeleton>();
-            foreach(Skeleton skel in skeletons){
-                ans.Add(skel);
-            }
-            return ans;
-        }
-
         public void saveToFile(string filePath)
         {
             SkeletonUtils.serialize(skeletons, filePath);

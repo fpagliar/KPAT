@@ -314,27 +314,6 @@ namespace WpfInterface
         {
             float accumError = 0;
 
-            //IEnumerator<Skeleton> originalEnum = original.getList().GetEnumerator();
-            //IEnumerator<Skeleton> imitationEnum = imitation.getList().GetEnumerator();
-
-            //while (originalEnum.MoveNext())
-            //{
-            //    if (!imitationEnum.MoveNext())
-            //    {
-            //        Debug.Write("a");
-            //    }
-            //    Skeleton orig = originalEnum.Current;
-            //    Skeleton imit = imitationEnum.Current;
-            //    //float error = compare(orig, imit);
-            //    if (orig == null || imit == null)
-            //    {
-            //        Debug.Write("a");
-            //    }
-            //    float error = compareAngles(orig, imit);
-            //    accumError += error;
-            //}
-            //return accumError;
-
             SkeletonRecorder safeOriginal = new SkeletonRecorder(original);
             SkeletonRecorder safeImitation = new SkeletonRecorder(imitation);
 
@@ -344,11 +323,6 @@ namespace WpfInterface
             {
                 Skeleton orig = safeOriginal.next();
                 Skeleton imit = safeImitation.next();
-                //float error = compare(orig, imit);
-                if (orig == null || imit == null)
-                {
-                    Debug.Write("a");
-                }
                 float error = compareAngles(orig, imit);
                 accumError += error;
             }
