@@ -52,7 +52,6 @@ namespace WpfInterface
             setUpSocket();
 
             sensor = KinectSensor.KinectSensors.Where(s => s.Status == KinectStatus.Connected).FirstOrDefault();
-
             if (sensor != null)
             {
                 sensor.ColorStream.Enable();
@@ -75,6 +74,7 @@ namespace WpfInterface
                 phrases.Add("SHUTDOWN");
                 phrases.Add("STOP");
                 sensor.Start();
+                sensor.ElevationAngle = 7;
                 
                 voiceController.StartRecognition(sensor, phrases);
                 Debug.WriteLine("RECOGNITION STARTED");
@@ -143,6 +143,11 @@ namespace WpfInterface
                 }
             }
             Skeleton defaultSkeleton = skeletons.Where(s => s.TrackingState == SkeletonTrackingState.Tracked).FirstOrDefault();
+            if (defaultSkeleton == null)
+            {
+                return;
+            }
+
             if (recording)
             {
                 recorder.add(defaultSkeleton);

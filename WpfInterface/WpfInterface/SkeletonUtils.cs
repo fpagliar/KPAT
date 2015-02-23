@@ -294,7 +294,7 @@ namespace WpfInterface
             {
                 Skeleton orig = safeOriginal.next();
                 Skeleton imit = safeImitation.next();
-                float error = compare(orig, imit);
+                float error = compareAngles(orig, imit);
                 Debug.WriteLine("error at frame: " + i + " " + error);
                 i++;
                 if (error > delta)
@@ -313,6 +313,28 @@ namespace WpfInterface
         public static float difference(SkeletonRecorder original, SkeletonRecorder imitation)
         {
             float accumError = 0;
+
+            //IEnumerator<Skeleton> originalEnum = original.getList().GetEnumerator();
+            //IEnumerator<Skeleton> imitationEnum = imitation.getList().GetEnumerator();
+
+            //while (originalEnum.MoveNext())
+            //{
+            //    if (!imitationEnum.MoveNext())
+            //    {
+            //        Debug.Write("a");
+            //    }
+            //    Skeleton orig = originalEnum.Current;
+            //    Skeleton imit = imitationEnum.Current;
+            //    //float error = compare(orig, imit);
+            //    if (orig == null || imit == null)
+            //    {
+            //        Debug.Write("a");
+            //    }
+            //    float error = compareAngles(orig, imit);
+            //    accumError += error;
+            //}
+            //return accumError;
+
             SkeletonRecorder safeOriginal = new SkeletonRecorder(original);
             SkeletonRecorder safeImitation = new SkeletonRecorder(imitation);
 
@@ -322,13 +344,44 @@ namespace WpfInterface
             {
                 Skeleton orig = safeOriginal.next();
                 Skeleton imit = safeImitation.next();
-                float error = compare(orig, imit);
+                //float error = compare(orig, imit);
+                if (orig == null || imit == null)
+                {
+                    Debug.Write("a");
+                }
+                float error = compareAngles(orig, imit);
                 accumError += error;
             }
             return accumError;
         }
 
-        public static float compare(Skeleton original, Skeleton imitation)
+        public static float compareAngles(Skeleton original, Skeleton imitation)
+        {
+            float accumError = 0;
+            foreach(Tuple<JointType, JointType> tuple in connections)
+            {
+                if (!targetJoints.Contains(tuple.Item1) || !targetJoints.Contains(tuple.Item2))
+                {
+                    continue;
+                }
+
+                float diffXOrig = original.Joints[tuple.Item1].Position.X - original.Joints[tuple.Item2].Position.X;
+                float diffXImit = imitation.Joints[tuple.Item1].Position.X - imitation.Joints[tuple.Item2].Position.X;
+
+                float diffYOrig = original.Joints[tuple.Item1].Position.Y - original.Joints[tuple.Item2].Position.Y;
+                float diffYImit = imitation.Joints[tuple.Item1].Position.Y - imitation.Joints[tuple.Item2].Position.Y;
+
+                double origAngle = Math.Atan(diffYOrig / diffXOrig);
+                double imitAngle = Math.Atan(diffYImit / diffXImit);
+
+                accumError += (float) Math.Abs(origAngle - imitAngle);
+
+            }
+            return accumError;
+        }
+
+
+        public static float comparePositions(Skeleton original, Skeleton imitation)
         {
             float accumError = 0;
             foreach (JointType type in Enum.GetValues(typeof(JointType)))
