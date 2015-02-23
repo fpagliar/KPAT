@@ -46,6 +46,13 @@ namespace WpfInterface
         private static string streamTag = "stream";
         private static string bestReproductionTag = "bestReproduction";
 
+        private float[] sumZ = new float[10];
+        private float bucket1 = 45;
+        private float bucket2 = 90;
+        private float bucket3 = 135;
+        private float offset = 10;
+        private int cant = 0;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -148,6 +155,47 @@ namespace WpfInterface
                 return;
             }
 
+            // START POSITION ANALYSIS
+            double xRot;
+            double yRot;
+            double zRot;
+            SkeletonUtils.ExtractRotationInDegrees(defaultSkeleton.BoneOrientations[JointType.WristLeft].AbsoluteRotation.Quaternion, 
+                out xRot, out yRot, out zRot);
+            sumZ[cant % 10] = (float)zRot;
+            cant++;
+
+            float mediaZ = 0;
+            for (int i = 0; i < sumZ.Length; i++)
+            {
+                mediaZ += sumZ[i];
+            }
+            mediaZ /= sumZ.Length;
+            mediaZ = (-mediaZ);
+
+            if (cant > 10)
+            {
+                if (mediaZ > (bucket1 - offset) && mediaZ < (bucket1 + offset))
+                {
+                    lowerLeft.Text = lowerLeft.Text + "A";
+                    //middleLeft.Text = "";
+                    //upperLeft.Text = "";
+                }
+                else if (mediaZ > (bucket2 - offset) && mediaZ < (bucket2 + offset))
+                {
+                    //lowerLeft.Text = "";
+                    middleLeft.Text = middleLeft.Text + "A";
+                    //upperLeft.Text = "";
+                }
+                else if (mediaZ > (bucket3 - offset) && mediaZ < (bucket3 + offset))
+                {
+                    //lowerLeft.Text = "";
+                    //middleLeft.Text = "";
+                    upperLeft.Text = upperLeft.Text + "A";
+                }
+                cant = 0;
+            }
+
+            //----------------------------------------------------
             if (recording)
             {
                 recorder.add(defaultSkeleton);

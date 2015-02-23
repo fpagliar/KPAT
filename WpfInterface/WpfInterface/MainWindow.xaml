@@ -29,5 +29,11 @@
         <Button x:Name="CompareButton" Content="Compare" HorizontalAlignment="Left" Margin="386,248,-138,0" VerticalAlignment="Top" Width="98" Height="52" Click="CompareButton_Click" Grid.Column="1"/>
         <Button x:Name="saveBestButton" Content="Save Best" HorizontalAlignment="Left" Margin="-172,304,0,-56" VerticalAlignment="Top" Width="98" Height="52" Click="SaveBestButton_Click"/>
         <TextBox x:Name="bestDiff" HorizontalAlignment="Left" Height="51" Margin="-172,248,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="153"/>
+        <TextBox x:Name="upperRight" HorizontalAlignment="Left" Height="46" Margin="226,7,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" Grid.Column="1"/>
+        <TextBox x:Name="middleRight" HorizontalAlignment="Left" Height="46" Margin="226,110,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" Grid.Column="1"/>
+        <TextBox x:Name="lowerRight" HorizontalAlignment="Left" Height="46" Margin="226,208,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" Grid.Column="1"/>
+        <TextBox x:Name="upperLeft" HorizontalAlignment="Left" Height="46" Margin="10,7,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
+        <TextBox x:Name="middleLeft" HorizontalAlignment="Left" Height="46" Margin="10,110,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
+        <TextBox x:Name="lowerLeft" HorizontalAlignment="Left" Height="46" Margin="10,208,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
     </Grid>
 </Window>

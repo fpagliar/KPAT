@@ -389,5 +389,19 @@ namespace WpfInterface
         }
 
         #endregion
+
+        public static void ExtractRotationInDegrees(Vector4 rotQuaternion, out double pitch, out double yaw, out double roll)
+        {
+            double x = rotQuaternion.X;
+            double y = rotQuaternion.Y;
+            double z = rotQuaternion.Z;
+            double w = rotQuaternion.W;
+
+            // convert face rotation quaternion to Euler angles in degrees
+            pitch = Math.Atan2(2 * ((y * z) + (w * x)), (w * w) - (x * x) - (y * y) + (z * z)) / Math.PI * 180.0;
+            yaw = Math.Asin(2 * ((w * y) - (x * z))) / Math.PI * 180.0;
+            roll = Math.Atan2(2 * ((x * y) + (w * z)), (w * w) + (x * x) - (y * y) - (z * z)) / Math.PI * 180.0;
+        }
+
     }
 }
