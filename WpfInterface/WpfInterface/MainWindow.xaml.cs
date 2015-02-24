@@ -1,24 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using Microsoft.Kinect;
-using System.Diagnostics;
-using System.Net.Sockets;
-using System.IO;
+﻿using Microsoft.Kinect;
+using System;
 using System.Collections.Concurrent;
-using System.Threading;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
+using System.Threading;
+using System.Windows;
+using System.Windows.Documents;
+using System.Windows.Media;
 
 namespace WpfInterface
 {
@@ -46,17 +40,21 @@ namespace WpfInterface
         private static string streamTag = "stream";
         private static string bestReproductionTag = "bestReproduction";
 
-        private float[] sumZ = new float[10];
+        private float[] sumZ = new float[5];
         private float bucket1 = 45;
         private float bucket2 = 90;
         private float bucket3 = 135;
         private float offset = 10;
         private int cant = 0;
+        private string[] nodes = new string[6];
+        private DateTime[] lastUses = new DateTime[6];
 
         public MainWindow()
         {
             InitializeComponent();
             setUpSocket();
+            nodes[0] = "10.2.18.143:8080";
+            lastUses[0] = DateTime.Now;
 
             sensor = KinectSensor.KinectSensors.Where(s => s.Status == KinectStatus.Connected).FirstOrDefault();
             if (sensor != null)
@@ -159,9 +157,9 @@ namespace WpfInterface
             double xRot;
             double yRot;
             double zRot;
-            SkeletonUtils.ExtractRotationInDegrees(defaultSkeleton.BoneOrientations[JointType.WristLeft].AbsoluteRotation.Quaternion, 
+            SkeletonUtils.ExtractRotationInDegrees(defaultSkeleton.BoneOrientations[JointType.ElbowLeft].AbsoluteRotation.Quaternion, 
                 out xRot, out yRot, out zRot);
-            sumZ[cant % 10] = (float)zRot;
+            sumZ[cant % 5] = (float)zRot;
             cant++;
 
             float mediaZ = 0;
@@ -171,14 +169,22 @@ namespace WpfInterface
             }
             mediaZ /= sumZ.Length;
             mediaZ = (-mediaZ);
+            Debug.WriteLine(mediaZ);
 
-            if (cant > 10)
-            {
+            //if (cant > 10)
+            //{
                 if (mediaZ > (bucket1 - offset) && mediaZ < (bucket1 + offset))
                 {
-                    lowerLeft.Text = lowerLeft.Text + "A";
-                    //middleLeft.Text = "";
-                    //upperLeft.Text = "";
+                    //if(lastUses[0].AddSeconds(1) < DateTime.Now)
+                    //{
+                    //    Thread thread = new Thread(new VlcController(nodes[0]).run);
+                    //    thread.Start();
+                    //    //togglePlay(nodes[0]);
+                    //    lowerLeft.Text = lowerLeft.Text + "A";
+                    //    //middleLeft.Text = "";
+                    //    //upperLeft.Text = "";
+                    //    lastUses[0] = DateTime.Now;
+                    //}
                 }
                 else if (mediaZ > (bucket2 - offset) && mediaZ < (bucket2 + offset))
                 {
@@ -188,12 +194,22 @@ namespace WpfInterface
                 }
                 else if (mediaZ > (bucket3 - offset) && mediaZ < (bucket3 + offset))
                 {
+                    if (lastUses[0].AddSeconds(1) < DateTime.Now)
+                    {
+                        Thread thread = new Thread(new VlcController(nodes[0]).run);
+                        thread.Start();
+                        //togglePlay(nodes[0]);
+                        upperLeft.Text = upperLeft.Text + "A";
+                        //middleLeft.Text = "";
+                        //upperLeft.Text = "";
+                        lastUses[0] = DateTime.Now;
+                    }
                     //lowerLeft.Text = "";
                     //middleLeft.Text = "";
-                    upperLeft.Text = upperLeft.Text + "A";
+                    //upperLeft.Text = upperLeft.Text + "A";
                 }
-                cant = 0;
-            }
+            //    cant = 0;
+            //}
 
             //----------------------------------------------------
             if (recording)
@@ -343,7 +359,6 @@ namespace WpfInterface
                     TcpClient clientSocket = default(TcpClient);
                     //Locking in accept, waiting to get a new client
                     clientSocket = serverSocket.AcceptTcpClient();
-                    Debug.WriteLine(" >> Accept connection from client");
                     NetworkStream networkStream = clientSocket.GetStream();
                     //Added it to the list of streams I'm communicating with
                     listenerStreams.Add(networkStream);
@@ -354,10 +369,8 @@ namespace WpfInterface
 
         private static void setUpSocket()
         {
-            Debug.WriteLine("SETTING UP SOCKET");
             TcpListener serverSocket = new TcpListener(8888);
             serverSocket.Start();
-            Debug.WriteLine(" >> Server Started");
             Thread thread = new Thread(new ThreadStart(new ThreadServer(serverSocket, listenerStreams).run));
             thread.Start();
         }
@@ -379,10 +392,8 @@ namespace WpfInterface
                     // Send the serialized skeleton afterwards
 
                     Byte[] sendBytes = Encoding.ASCII.GetBytes(lines);
-                    //Debug.WriteLine("SENDING to: " + stream + "length: " + sendBytes.Length);
                     Byte[] length = BitConverter.GetBytes(sendBytes.Length);
                     stream.Write(length, 0, length.Length);
-                    //Debug.WriteLine("LENGTH LENGTH IS :" + length.Length);
                     stream.Write(sendBytes, 0, sendBytes.Length);
                     stream.Flush();
                 }
@@ -402,6 +413,33 @@ namespace WpfInterface
             }
         }
 
+        #endregion
+
+        #region VlcRemote
+
+        private class VlcController {
+            private string ip;
+
+            public VlcController(string ip)
+            {
+                this.ip = ip;
+            }
+
+            public void run()
+            {
+                Debug.WriteLine("TOGGLE");
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://" + ip + "/requests/status.xml?" + "command=pl_pause");
+                request.Headers["Authorization"] = "Basic " + password("1234");
+                WebResponse resp = request.GetResponse();
+                Debug.WriteLine("TOGGLE: " + resp.Headers);
+            }
+
+            private string password(string pass)
+            {
+                var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(":" + pass); //No username
+                return System.Convert.ToBase64String(plainTextBytes);
+            }
+        }
         #endregion
 
     }
