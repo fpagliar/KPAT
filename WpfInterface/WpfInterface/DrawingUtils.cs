@@ -23,12 +23,12 @@ namespace WpfInterface
         /// <summary>
         /// The default circle radius.
         /// </summary>
-        static double DEFAULT_ELLIPSE_RADIUS = 20;
+        static double DEFAULT_ELLIPSE_RADIUS = 10;
 
         /// <summary>
         /// The default line thickness.
         /// </summary>
-        static double DEFAULT_LINE_THICKNESS = 8;
+        static double DEFAULT_LINE_THICKNESS = 4;
 
         #endregion
 

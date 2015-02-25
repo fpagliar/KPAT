@@ -59,8 +59,11 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="DrawingUtils.cs" />
+    <Compile Include="PositionAnalyzer.cs" />
     <Compile Include="SkeletonRecorder.cs" />
     <Compile Include="SkeletonUtils.cs" />
+    <Compile Include="TcpServer.cs" />
+    <Compile Include="VlcController.cs" />
     <Compile Include="VoiceController.cs" />
     <Compile Include="WindowUtils.cs" />
     <Page Include="MainWindow.xaml">

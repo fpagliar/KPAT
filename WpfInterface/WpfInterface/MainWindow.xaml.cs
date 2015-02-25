@@ -40,23 +40,20 @@ namespace WpfInterface
         private static string streamTag = "stream";
         private static string bestReproductionTag = "bestReproduction";
 
-        private float[] sumZ = new float[5];
-        private float bucket1 = 45;
-        private float bucket2 = 90;
-        private float bucket3 = 135;
-        private float offset = 10;
-        private int cant = 0;
-        private string[] nodes = new string[6];
-        private DateTime[] lastUses = new DateTime[6];
+        private static TcpServer tcpServer = new TcpServer(8888);
+        private static PositionAnalyzer leftArmAnalyzer;
+        private static PositionAnalyzer rightArmAnalyzer;
 
         public MainWindow()
         {
             InitializeComponent();
-            setUpSocket();
-            nodes[0] = "10.2.18.143:8080";
-            lastUses[0] = DateTime.Now;
 
             sensor = KinectSensor.KinectSensors.Where(s => s.Status == KinectStatus.Connected).FirstOrDefault();
+            string[] leftArmIps = new string[] {"192.168.0.41:8080", "192.168.0.36:8080", "192.168.0.68:8080"};
+            string[] rightArmIps = new string[] {"192.168.0.33:8080", "192.168.0.37:8080", "192.168.0.34:8080"};
+            rightArmAnalyzer = new PositionAnalyzer(5, JointType.ElbowRight, 6, 10, false, rightArmIps, true);
+            leftArmAnalyzer = new PositionAnalyzer(10, JointType.ElbowLeft, 6, 10, false, leftArmIps, false);
+
             if (sensor != null)
             {
                 sensor.ColorStream.Enable();
@@ -153,65 +150,11 @@ namespace WpfInterface
                 return;
             }
 
-            // START POSITION ANALYSIS
-            double xRot;
-            double yRot;
-            double zRot;
-            SkeletonUtils.ExtractRotationInDegrees(defaultSkeleton.BoneOrientations[JointType.ElbowLeft].AbsoluteRotation.Quaternion, 
-                out xRot, out yRot, out zRot);
-            sumZ[cant % 5] = (float)zRot;
-            cant++;
+            leftArmAnalyzer.checkPosition(defaultSkeleton);
+            Color color = rightArmAnalyzer.checkPosition(defaultSkeleton);
+            //if(color != Colors.Peru)
+            //    SkeletonUtils.DrawSkeleton(skeletonCanvas, defaultSkeleton, color, "posskells");
 
-            float mediaZ = 0;
-            for (int i = 0; i < sumZ.Length; i++)
-            {
-                mediaZ += sumZ[i];
-            }
-            mediaZ /= sumZ.Length;
-            mediaZ = (-mediaZ);
-            Debug.WriteLine(mediaZ);
-
-            //if (cant > 10)
-            //{
-                if (mediaZ > (bucket1 - offset) && mediaZ < (bucket1 + offset))
-                {
-                    //if(lastUses[0].AddSeconds(1) < DateTime.Now)
-                    //{
-                    //    Thread thread = new Thread(new VlcController(nodes[0]).run);
-                    //    thread.Start();
-                    //    //togglePlay(nodes[0]);
-                    //    lowerLeft.Text = lowerLeft.Text + "A";
-                    //    //middleLeft.Text = "";
-                    //    //upperLeft.Text = "";
-                    //    lastUses[0] = DateTime.Now;
-                    //}
-                }
-                else if (mediaZ > (bucket2 - offset) && mediaZ < (bucket2 + offset))
-                {
-                    //lowerLeft.Text = "";
-                    middleLeft.Text = middleLeft.Text + "A";
-                    //upperLeft.Text = "";
-                }
-                else if (mediaZ > (bucket3 - offset) && mediaZ < (bucket3 + offset))
-                {
-                    if (lastUses[0].AddSeconds(1) < DateTime.Now)
-                    {
-                        Thread thread = new Thread(new VlcController(nodes[0]).run);
-                        thread.Start();
-                        //togglePlay(nodes[0]);
-                        upperLeft.Text = upperLeft.Text + "A";
-                        //middleLeft.Text = "";
-                        //upperLeft.Text = "";
-                        lastUses[0] = DateTime.Now;
-                    }
-                    //lowerLeft.Text = "";
-                    //middleLeft.Text = "";
-                    //upperLeft.Text = upperLeft.Text + "A";
-                }
-            //    cant = 0;
-            //}
-
-            //----------------------------------------------------
             if (recording)
             {
                 recorder.add(defaultSkeleton);
@@ -327,6 +270,7 @@ namespace WpfInterface
             speechRejected.Text = "ANS: " + ans + " differece: " + diff + " in " + recorder.size() + " frames" +
                 " vs " + replayer.size() + " frames";
         }
+
         private void SaveBestButton_Click(object sender, RoutedEventArgs e)
         {
             Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog();
@@ -339,108 +283,11 @@ namespace WpfInterface
 
         #endregion
 
-        #region ThreadServer
-
-        private class ThreadServer
-        {
-            private TcpListener serverSocket;
-            private ConcurrentBag<NetworkStream> listenerStreams;
-
-            public ThreadServer(TcpListener serverSocket, ConcurrentBag<NetworkStream> listenerStreams)
-            {
-                this.serverSocket = serverSocket;
-                this.listenerStreams = listenerStreams;
-            }
-
-            public void run()
-            {
-                while (true)
-                {
-                    TcpClient clientSocket = default(TcpClient);
-                    //Locking in accept, waiting to get a new client
-                    clientSocket = serverSocket.AcceptTcpClient();
-                    NetworkStream networkStream = clientSocket.GetStream();
-                    //Added it to the list of streams I'm communicating with
-                    listenerStreams.Add(networkStream);
-                }
-            }
-        }
-
-
-        private static void setUpSocket()
-        {
-            TcpListener serverSocket = new TcpListener(8888);
-            serverSocket.Start();
-            Thread thread = new Thread(new ThreadStart(new ThreadServer(serverSocket, listenerStreams).run));
-            thread.Start();
-        }
 
         private static void fixSkeleton(Skeleton skeleton)
         {
-            informListeners(SkeletonUtils.toString(skeleton).ToString());
+            tcpServer.informListeners(SkeletonUtils.toString(skeleton).ToString());
         }
-
-        private static void informListeners(string lines)
-        {
-            List<NetworkStream> fuckedStreams = new List<NetworkStream>();
-            foreach (NetworkStream stream in listenerStreams)
-            {
-                try
-                {
-                    // Communication protocol: serialize the skeleton
-                    // Send the size of the package first (packages have variable size)
-                    // Send the serialized skeleton afterwards
-
-                    Byte[] sendBytes = Encoding.ASCII.GetBytes(lines);
-                    Byte[] length = BitConverter.GetBytes(sendBytes.Length);
-                    stream.Write(length, 0, length.Length);
-                    stream.Write(sendBytes, 0, sendBytes.Length);
-                    stream.Flush();
-                }
-                catch (IOException)
-                {
-                    //IOException can happen for multiple reasons, but basically, that channel
-                    //has problems and I don't want it, kicking it out. If you want to reconnect,
-                    //just get a new one.
-                    fuckedStreams.Add(stream);
-                }
-            }
-            foreach (NetworkStream stream in fuckedStreams)
-            {
-                NetworkStream temp = stream;
-                temp.Dispose();
-                listenerStreams.TryTake(out temp);
-            }
-        }
-
-        #endregion
-
-        #region VlcRemote
-
-        private class VlcController {
-            private string ip;
-
-            public VlcController(string ip)
-            {
-                this.ip = ip;
-            }
-
-            public void run()
-            {
-                Debug.WriteLine("TOGGLE");
-                HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://" + ip + "/requests/status.xml?" + "command=pl_pause");
-                request.Headers["Authorization"] = "Basic " + password("1234");
-                WebResponse resp = request.GetResponse();
-                Debug.WriteLine("TOGGLE: " + resp.Headers);
-            }
-
-            private string password(string pass)
-            {
-                var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(":" + pass); //No username
-                return System.Convert.ToBase64String(plainTextBytes);
-            }
-        }
-        #endregion
 
     }
 }
