@@ -72,9 +72,9 @@ namespace WpfInterface
                 voiceController.RecognitionConfidence = 0.50;
 
                 List<String> phrases = new List<string>();
-                phrases.Add("OK KINECT, START RECORDING");
-                phrases.Add("SHUTDOWN");
                 phrases.Add("STOP");
+                //phrases.Add("SHUTDOWN");
+                //phrases.Add("STOP");
                 sensor.Start();
                 sensor.ElevationAngle = 7;
                 
@@ -102,6 +102,11 @@ namespace WpfInterface
 
         void Recognizer_SpeechRecognized(object sender, Microsoft.Speech.Recognition.SpeechRecognizedEventArgs e)
         {
+            if (e.Result.Confidence > 0.70)
+            {
+                leftArmAnalyzer.stop();
+                rightArmAnalyzer.stop();
+            }
             speechRecognized.Text = e.Result.Text + "\n" + e.Result.Confidence;
         }
 
@@ -150,8 +155,8 @@ namespace WpfInterface
                 return;
             }
 
-            leftArmAnalyzer.checkPosition(defaultSkeleton);
-            Color color = rightArmAnalyzer.checkPosition(defaultSkeleton);
+            //leftArmAnalyzer.checkPosition(defaultSkeleton);
+            //Color color = rightArmAnalyzer.checkPosition(defaultSkeleton);
             //if(color != Colors.Peru)
             //    SkeletonUtils.DrawSkeleton(skeletonCanvas, defaultSkeleton, color, "posskells");
 
@@ -178,6 +183,11 @@ namespace WpfInterface
                 if (stream.size() == replayer.size())
                 {
                     float diff = SkeletonUtils.difference(stream, replayer);
+                    if (diff < 170)
+                    {
+                        leftArmAnalyzer.fullVolume();
+                        rightArmAnalyzer.fullVolume();
+                    }
                     bestDiff.Text = "Best diff: " + bestReproductionDiff + " current: " + diff ;
                     if (bestReproductionDiff > diff)
                     {

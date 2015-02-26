@@ -26,7 +26,13 @@ namespace WpfInterface
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://" + ip + "/requests/status.xml?" + "command=volume&val=512");
             request.Headers["Authorization"] = "Basic " + password("1234");
             WebResponse resp = request.GetResponse();
-            //Debug.WriteLine("TOGGLE: " + resp.Headers);
+        }
+
+        public void stop()
+        {
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://" + ip + "/requests/status.xml?" + "command=pl_stop");
+            request.Headers["Authorization"] = "Basic " + password("1234");
+            WebResponse resp = request.GetResponse();
         }
 
         private string password(string pass)

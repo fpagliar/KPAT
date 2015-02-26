@@ -44,6 +44,25 @@ namespace WpfInterface
             this.right = right;
         }
 
+        public void stop()
+        {
+            for (int i = 0; i < ipaddresses.Length; i++)
+            {
+                Thread thread = new Thread(new VlcController(ipaddresses[i]).stop);
+                thread.Start();
+            }
+
+        }
+
+        public void fullVolume()
+        {
+            for (int i = 0; i < ipaddresses.Length; i++)
+            {
+                Thread thread = new Thread(new VlcController(ipaddresses[i]).volume);
+                thread.Start();
+            }
+        }
+
         public Color checkPosition(Skeleton skeleton)
         {
             if (right)
