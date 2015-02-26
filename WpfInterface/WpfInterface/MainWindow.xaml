@@ -17,7 +17,9 @@
                 </TransformGroup>
             </Image.RenderTransform>
         </Image>
-        <Canvas x:Name="skeletonCanvas" HorizontalAlignment="Center" Height="300" VerticalAlignment="Center" Width="500" Grid.ColumnSpan="2"/>
+        <Canvas x:Name="skeletonCanvas" HorizontalAlignment="Center" Height="300" VerticalAlignment="Center" Width="500" Grid.ColumnSpan="2">
+            <Slider x:Name="sliderAngle" MouseUp="Slider_MouseUp" Canvas.Left="526" Canvas.Top="360" Height="33" Width="150" ValueChanged="Slider_ValueChanged_2" Maximum="26" Value="5" SmallChange="1"/>
+        </Canvas>
         <TextBox x:Name="speechRecognized" HorizontalAlignment="Left" Height="46" Margin="386,10,-160,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="120" Grid.Column="1"/>
         <TextBox x:Name="speechHypothezised" HorizontalAlignment="Left" Height="37" Margin="386,78,-160,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="120" Grid.Column="1"/>
         <TextBox x:Name="speechDetected" HorizontalAlignment="Left" Height="37" Margin="386,134,-160,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="120" Grid.Column="1"/>
@@ -35,5 +37,6 @@
         <TextBox x:Name="upperLeft" HorizontalAlignment="Left" Height="46" Margin="10,7,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
         <TextBox x:Name="middleLeft" HorizontalAlignment="Left" Height="46" Margin="10,110,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
         <TextBox x:Name="lowerLeft" HorizontalAlignment="Left" Height="46" Margin="10,208,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
+        <TextBox Grid.Column="1" HorizontalAlignment="Left" Height="23" Margin="364,333,-186,-56" TextWrapping="Wrap" Text="Camera elevation angle" VerticalAlignment="Top" Width="168"/>
     </Grid>
 </Window>

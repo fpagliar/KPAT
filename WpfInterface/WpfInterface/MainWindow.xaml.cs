@@ -13,7 +13,8 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Media;
-
+using System.Windows.Controls;
+using System.Windows.Forms;
 namespace WpfInterface
 {
     /// <summary>
@@ -40,17 +41,18 @@ namespace WpfInterface
         private static string streamTag = "stream";
         private static string bestReproductionTag = "bestReproduction";
 
-        private static TcpServer tcpServer = new TcpServer(8888);
+        //private static TcpServer tcpServer = new TcpServer(8888);
         private static PositionAnalyzer leftArmAnalyzer;
         private static PositionAnalyzer rightArmAnalyzer;
+        private System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
 
         public MainWindow()
         {
             InitializeComponent();
 
             sensor = KinectSensor.KinectSensors.Where(s => s.Status == KinectStatus.Connected).FirstOrDefault();
-            string[] leftArmIps = new string[] {"192.168.0.41:8080", "192.168.0.36:8080", "192.168.0.68:8080"};
-            string[] rightArmIps = new string[] {"192.168.0.33:8080", "192.168.0.37:8080", "192.168.0.34:8080"};
+            string[] leftArmIps = new string[] { "192.168.0.41:8080", "192.168.0.36:8080", "192.168.0.68:8080" };
+            string[] rightArmIps = new string[] { "192.168.0.33:8080", "192.168.0.37:8080", "192.168.0.34:8080" };
             rightArmAnalyzer = new PositionAnalyzer(5, JointType.ElbowRight, 6, 10, false, rightArmIps, true);
             leftArmAnalyzer = new PositionAnalyzer(10, JointType.ElbowLeft, 6, 10, false, leftArmIps, false);
 
@@ -64,12 +66,7 @@ namespace WpfInterface
                 sensor.SkeletonFrameReady += Sensor_SkeletonFrameReady;
 
 
-                voiceController = new VoiceController();
-                voiceController.SpeechRecognized += Recognizer_SpeechRecognized;
-                voiceController.SpeechHypothesized += Recognizer_SpeechHypothezised;
-                voiceController.SpeechDetected += Recognizer_SpeechDetected;
-                voiceController.SpeechRejected += Recognizer_SpeechRejected;
-                voiceController.RecognitionConfidence = 0.50;
+                setVoiceController();
 
                 List<String> phrases = new List<string>();
                 phrases.Add("STOP");
@@ -77,11 +74,27 @@ namespace WpfInterface
                 //phrases.Add("STOP");
                 sensor.Start();
                 sensor.ElevationAngle = 7;
-                
+
                 voiceController.StartRecognition(sensor, phrases);
                 Debug.WriteLine("RECOGNITION STARTED");
             }
 
+            addTrackingJoints();
+
+        }
+
+        private void setVoiceController()
+        {
+            voiceController = new VoiceController();
+            voiceController.SpeechRecognized += Recognizer_SpeechRecognized;
+            voiceController.SpeechHypothesized += Recognizer_SpeechHypothezised;
+            voiceController.SpeechDetected += Recognizer_SpeechDetected;
+            voiceController.SpeechRejected += Recognizer_SpeechRejected;
+            voiceController.RecognitionConfidence = 0.50;
+        }
+
+        private static void addTrackingJoints()
+        {
             // Adding the joints I want to track
             SkeletonUtils.addJoint(JointType.ShoulderLeft);
             SkeletonUtils.addJoint(JointType.ShoulderRight);
@@ -89,7 +102,6 @@ namespace WpfInterface
             SkeletonUtils.addJoint(JointType.ElbowRight);
             SkeletonUtils.addJoint(JointType.WristLeft);
             SkeletonUtils.addJoint(JointType.WristRight);
-
         }
 
         void MainWindow_Closing(object sender, CancelEventArgs e)
@@ -296,8 +308,56 @@ namespace WpfInterface
 
         private static void fixSkeleton(Skeleton skeleton)
         {
-            tcpServer.informListeners(SkeletonUtils.toString(skeleton).ToString());
+            //tcpServer.informListeners(SkeletonUtils.toString(skeleton).ToString());
         }
 
+        private void Slider_MouseUp(object sender, System.EventArgs e)
+        {
+            Debug.WriteLine("asd");
+        }
+        private void Slider_MouseDown(object sender, MouseEventArgs e)
+        {
+            Debug.WriteLine("abf");
+        }
+
+        private void Slider_ValueChanged_2(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+
+            //timer.Interval = 1000;
+           
+            //// ... Get Slider reference.
+            //var slider = sender as Slider;
+            
+            //// ... Get Value.
+            //double value = slider.Value;
+                
+            //if (sensor != null)
+            //{
+            //    timer.Start();
+            //    timer.Tick += timer_Tick;
+                    
+            //    // ... Set Window Title.
+            //    this.Title = "Value: " + value.ToString("0.0") + "/" + slider.Maximum;
+            //    try
+            //    {
+            //        sensor.ElevationAngle = Convert.ToInt32(value);
+            //    }
+            //    catch (Exception)
+            //    {
+            //    }
+            //    finally {
+            //        sliderAngle.IsEnabled = false;
+            //    }
+                
+            //}
+
+        }
+
+        void timer_Tick(object sender, System.EventArgs e)
+        {
+            sliderAngle.IsEnabled = true;
+            timer.Stop();
+        }
+        
     }
 }
