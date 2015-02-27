@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
+using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 
 namespace WpfInterface
 {
@@ -11,15 +11,15 @@ namespace WpfInterface
     {
         private Image mainImage;
 
-        public CameraListener(Image skeletonCanvas)
+        public CameraListener(Image mainImage)
         {
-            this.mainImage = skeletonCanvas;
+            this.mainImage = mainImage;
         }
 
         public void dataArrived(object data)
         {
-            //ImageData img = (ImageData)data;
-            //mainImage.Source = WindowUtils.ToBitmap(img);
+            List<Object> list = (List<Object>) data;
+            Application.Current.Dispatcher.BeginInvoke(new ThreadStart(() => mainImage.Source = WindowUtils.ToBitmap((int)list[0], (int)list[1], (byte[])list[2])));
         }
     }
 }

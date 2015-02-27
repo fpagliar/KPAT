@@ -28,8 +28,8 @@ namespace KinectServer
         private static KinectSensor sensor;
         private static VoiceController voiceController;
         private static TcpServer skeletonServer = new TcpServer(8081);
+        private static TcpServer cameraServer = new TcpServer(8082);
         //private static TcpServer voiceServer = new TcpServer(8081);
-        //private static TcpServer cameraServer = new TcpServer(8082);
 
         public MainWindow()
         {
@@ -74,7 +74,13 @@ namespace KinectServer
                     int _width = (int) source.Width;
                     int _height = (int) source.Height;
                     byte[] _pixels = new byte[_width * _height * WindowUtils.BYTES_PER_PIXEL];
-                    //cameraServer.informListeners(new ImageData(_width, _height, _pixels));
+                    frame.CopyPixelDataTo(_pixels);
+                    //object[] data = new object[] { _width, _height, _pixels };
+                    List<Object> data = new List<object>();
+                    data.Add(_width);
+                    data.Add(_height);
+                    data.Add(_pixels);
+                    cameraServer.informListeners(data);
                 }
             }
         }   

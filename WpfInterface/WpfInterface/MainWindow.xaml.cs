@@ -23,7 +23,7 @@ namespace WpfInterface
     public partial class MainWindow : Window
     {
         private System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
-        //private static TcpClient cameraClient;
+        private static TcpClient cameraClient;
         private static TcpClient skeletonClient;
 
         public MainWindow()
@@ -36,9 +36,13 @@ namespace WpfInterface
             //leftArmAnalyzer = new PositionAnalyzer(10, JointType.ElbowLeft, 6, 10, false, leftArmIps, false);
 
             skeletonClient = new TcpClient("127.0.0.1", 8081, new SkeletonListener(skeletonCanvas));
-            //cameraClient = new TcpClient("127.0.0.1", 8082, new CameraListener(MainImage));
+            cameraClient = new TcpClient("127.0.0.1", 8082, new CameraListener(MainImage));
 
             addTrackingJoints();
+            Thread thread = new Thread(new ThreadStart(cameraClient.runLoop));
+            thread.Start();
+            Thread other = new Thread(new ThreadStart(skeletonClient.runLoop));
+            other.Start();
 
         }
 
@@ -51,10 +55,6 @@ namespace WpfInterface
             SkeletonUtils.addJoint(JointType.ElbowRight);
             SkeletonUtils.addJoint(JointType.WristLeft);
             SkeletonUtils.addJoint(JointType.WristRight);
-            //Thread thread = new Thread(new ThreadStart(cameraClient.run));
-            //thread.Start();
-            Thread thread = new Thread(new ThreadStart(skeletonClient.runLoop));
-            thread.Start();
             //loop();
         }
 

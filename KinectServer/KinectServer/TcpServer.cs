@@ -20,7 +20,7 @@ namespace KinectServer
 {
     class TcpServer
     {
-        private static ConcurrentBag<NetworkStream> listenerStreams = new ConcurrentBag<NetworkStream>();
+        private ConcurrentBag<NetworkStream> listenerStreams = new ConcurrentBag<NetworkStream>();
 
         public TcpServer(int port)
         {

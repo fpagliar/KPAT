@@ -61,22 +61,19 @@ namespace WpfInterface
         }
 
 
-        //public static BitmapSource ToBitmap(ImageData data)
-        //{
-        //    int _width = data.getWidth();
-        //    int _height = data.getHeight();
-        //    byte[] _pixels = data.getData();
-        //    WriteableBitmap _bitmap = new WriteableBitmap(_width, _height, DPI, DPI, FORMAT, null);
+        public static BitmapSource ToBitmap(int _width, int _height, byte[] _pixels)
+        {
+            WriteableBitmap _bitmap = new WriteableBitmap(_width, _height, DPI, DPI, FORMAT, null);
 
-        //    _bitmap.Lock();
+            _bitmap.Lock();
 
-        //    Marshal.Copy(_pixels, 0, _bitmap.BackBuffer, _pixels.Length);
-        //    _bitmap.AddDirtyRect(new Int32Rect(0, 0, _width, _height));
+            Marshal.Copy(_pixels, 0, _bitmap.BackBuffer, _pixels.Length);
+            _bitmap.AddDirtyRect(new Int32Rect(0, 0, _width, _height));
 
-        //    _bitmap.Unlock();
+            _bitmap.Unlock();
 
-        //    return _bitmap;
-        //}
+            return _bitmap;
+        }
 
         #endregion
     }
