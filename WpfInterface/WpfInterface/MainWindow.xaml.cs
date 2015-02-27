@@ -35,12 +35,12 @@ namespace WpfInterface
             //rightArmAnalyzer = new PositionAnalyzer(5, JointType.ElbowRight, 6, 10, false, rightArmIps, true);
             //leftArmAnalyzer = new PositionAnalyzer(10, JointType.ElbowLeft, 6, 10, false, leftArmIps, false);
 
-            skeletonClient = new TcpClient("127.0.0.1", 8081, new SkeletonListener(skeletonCanvas));
-            cameraClient = new TcpClient("127.0.0.1", 8082, new CameraListener(MainImage));
+            skeletonClient = new TcpClient("192.168.0.81", 8081, new SkeletonListener(skeletonCanvas));
+            //cameraClient = new TcpClient("192.168.0.81", 8082, new CameraListener(MainImage));
 
             addTrackingJoints();
-            Thread thread = new Thread(new ThreadStart(cameraClient.runLoop));
-            thread.Start();
+            //Thread thread = new Thread(new ThreadStart(cameraClient.runLoop));
+            //thread.Start();
             Thread other = new Thread(new ThreadStart(skeletonClient.runLoop));
             other.Start();
 
@@ -183,5 +183,7 @@ namespace WpfInterface
             sliderAngle.IsEnabled = true;
             timer.Stop();
         }
+
+      
     }
 }

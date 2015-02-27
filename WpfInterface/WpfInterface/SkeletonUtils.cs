@@ -19,8 +19,8 @@ namespace WpfInterface
         private static float delta = 2000f;
         private static float deltaAccum = 20000f;
 
-        private static int screenWidth = 500;
-        private static int screenHeight = 300;
+        private static int screenWidth = 700;
+        private static int screenHeight = 420;
 
         private static List<JointType> targetJoints = new List<JointType>();
         private static List<Tuple<JointType, JointType>> connections = setUpConnections();
