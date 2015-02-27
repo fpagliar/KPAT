@@ -1,13 +1,22 @@
-﻿using System;
+﻿using Microsoft.Kinect;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System.Windows;
 using System.Windows.Documents;
+using System.Windows.Media;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
 
-namespace WpfInterface
+namespace KinectServer
 {
     class TcpServer
     {
@@ -26,19 +35,15 @@ namespace WpfInterface
             thread.Start();
         }
 
-        public void informListeners(string lines)
+        public void informListeners(Object data)
         {
             List<NetworkStream> fuckedStreams = new List<NetworkStream>();
             foreach (NetworkStream stream in listenerStreams)
             {
                 try
                 {
-                    // Send the size of the package first (packages have variable size)
-                    // Send the serialized object afterwards
-                    Byte[] sendBytes = Encoding.ASCII.GetBytes(lines);
-                    Byte[] length = BitConverter.GetBytes(sendBytes.Length);
-                    stream.Write(length, 0, length.Length);
-                    stream.Write(sendBytes, 0, sendBytes.Length);
+                    BinaryFormatter serializer = new BinaryFormatter();
+                    serializer.Serialize(stream, data);
                     stream.Flush();
                 }
                 catch (IOException)
@@ -55,7 +60,7 @@ namespace WpfInterface
                 NetworkStream temp = stream;
                 temp.Dispose();
                 listenerStreams.TryTake(out temp);
-            }
+            }            
         }
 
         #region ThreadServer
@@ -80,6 +85,7 @@ namespace WpfInterface
                     clientSocket = serverSocket.AcceptTcpClient();
                     NetworkStream networkStream = clientSocket.GetStream();
                     //Added it to the list of streams I'm communicating with
+                    Debug.WriteLine("NEW CONNECTION");
                     listenerStreams.Add(networkStream);
                 }
             }

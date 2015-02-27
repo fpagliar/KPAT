@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{0D094A5F-A83B-4D0B-AAD3-A5EA08DE70B0}</ProjectGuid>
+    <ProjectGuid>{753EC03A-F2CB-4816-AC89-4D99710CB461}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>WpfInterface</RootNamespace>
-    <AssemblyName>WpfInterface</AssemblyName>
+    <RootNamespace>KinectServer</RootNamespace>
+    <AssemblyName>KinectServer</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -34,6 +34,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="KinectUtils">
+      <HintPath>..\..\KinectUtils\KinectUtils\bin\Debug\KinectUtils.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Kinect, Version=1.8.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.Speech, Version=11.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -41,7 +44,8 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Net.Http.WebRequest" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -59,15 +63,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="CameraListener.cs" />
-    <Compile Include="ClientListener.cs" />
-    <Compile Include="DrawingUtils.cs" />
-    <Compile Include="PositionAnalyzer.cs" />
-    <Compile Include="SkeletonListener.cs" />
-    <Compile Include="SkeletonRecorder.cs" />
     <Compile Include="SkeletonUtils.cs" />
-    <Compile Include="TcpClient.cs" />
-    <Compile Include="VlcController.cs" />
+    <Compile Include="TcpServer.cs" />
     <Compile Include="VoiceController.cs" />
     <Compile Include="WindowUtils.cs" />
     <Page Include="MainWindow.xaml">
@@ -78,6 +75,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="DrawingUtils.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>

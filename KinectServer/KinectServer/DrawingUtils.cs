@@ -126,7 +126,7 @@ namespace WpfInterface
         }
 
         public static void deleteElements(this Canvas canvas, string tag)
-        { 
+        {
             List<UIElement> deleteList = new List<UIElement>();
             foreach (UIElement elem in canvas.Children)
             {
