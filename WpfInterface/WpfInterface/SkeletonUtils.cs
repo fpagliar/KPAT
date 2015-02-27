@@ -96,6 +96,23 @@ namespace WpfInterface
             return ScaleTo(joint, width, height, 1.0f, 1.0f);
         }
 
+        public static Joint ScaleTo(Joint joint, double width, double height, SkeletonPoint skeletonPos)
+        {
+            return ScaleTo(joint, width, height, 1.0f, 1.0f, skeletonPos);
+        }
+
+        private static Joint ScaleTo(Joint joint, double width, double height, float skeletonMaxX, float skeletonMaxY, SkeletonPoint skeletonPos)
+        {
+            joint.Position = new SkeletonPoint()
+            {
+                X = Scale(width, skeletonMaxX, (float)(joint.Position.X - skeletonPos.X)),
+                Y = Scale(height, skeletonMaxY, (float)(-joint.Position.Y - skeletonPos.Y)),
+                Z = joint.Position.Z
+            };
+
+            return joint;
+        }
+
         private static Joint ScaleTo(Joint joint, double width, double height, float skeletonMaxX, float skeletonMaxY)
         {
             joint.Position = new SkeletonPoint()
@@ -151,7 +168,7 @@ namespace WpfInterface
             // TODO: skip the joints not in targetJoints?
             foreach (Joint joint in skeleton.Joints)
             {
-                Joint scaledJoint = ScaleTo(joint, screenWidth, screenHeight);
+                Joint scaledJoint = ScaleTo(joint, screenWidth, screenHeight, skeleton.Position);
                 DrawingUtils.DrawPoint(canvas, new Point { X = scaledJoint.Position.X, Y = scaledJoint.Position.Y }, color, tag);
             }
 
@@ -159,13 +176,13 @@ namespace WpfInterface
             {
                 DrawingUtils.DrawLine(canvas, new Point
                 {
-                    X = ScaleTo(skeleton.Joints[tuple.Item1], screenWidth, screenHeight).Position.X,
-                    Y = ScaleTo(skeleton.Joints[tuple.Item1], screenWidth, screenHeight).Position.Y
+                    X = ScaleTo(skeleton.Joints[tuple.Item1], screenWidth, screenHeight, skeleton.Position).Position.X,
+                    Y = ScaleTo(skeleton.Joints[tuple.Item1], screenWidth, screenHeight, skeleton.Position).Position.Y
                 },
                 new Point
                 {
-                    X = ScaleTo(skeleton.Joints[tuple.Item2], screenWidth, screenHeight).Position.X,
-                    Y = ScaleTo(skeleton.Joints[tuple.Item2], screenWidth, screenHeight).Position.Y
+                    X = ScaleTo(skeleton.Joints[tuple.Item2], screenWidth, screenHeight, skeleton.Position).Position.X,
+                    Y = ScaleTo(skeleton.Joints[tuple.Item2], screenWidth, screenHeight, skeleton.Position).Position.Y
                 }, color, tag);
             }
         }

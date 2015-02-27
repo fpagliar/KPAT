@@ -19,7 +19,8 @@ namespace WpfInterface
         public void dataArrived(object data)
         {
             List<Object> list = (List<Object>) data;
-            Application.Current.Dispatcher.BeginInvoke(new ThreadStart(() => mainImage.Source = WindowUtils.ToBitmap((int)list[0], (int)list[1], (byte[])list[2])));
+            Application.Current.Dispatcher.BeginInvoke(
+                new ThreadStart(() => mainImage.Source = WindowUtils.ToBitmap((int)list[0], (int)list[1], (byte[])list[2])));
         }
     }
 }
