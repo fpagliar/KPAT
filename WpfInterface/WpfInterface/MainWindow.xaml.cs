@@ -34,8 +34,9 @@ namespace WpfInterface
             //string[] rightArmIps = new string[] { "192.168.0.33:8080", "192.168.0.37:8080", "192.168.0.34:8080" };
             //rightArmAnalyzer = new PositionAnalyzer(5, JointType.ElbowRight, 6, 10, false, rightArmIps, true);
             //leftArmAnalyzer = new PositionAnalyzer(10, JointType.ElbowLeft, 6, 10, false, leftArmIps, false);
-
-            skeletonClient = new TcpClient("127.0.0.1", 8081, new SkeletonListener(skeletonCanvas));
+            Dictionary<int, System.Windows.Controls.TextBox> UIControls = new Dictionary<int ,System.Windows.Controls.TextBox>();
+            addWinFormsControls(UIControls);
+            skeletonClient = new TcpClient("192.168.0.81", 8081, new SkeletonListener(skeletonCanvas, UIControls));
             //cameraClient = new TcpClient("192.168.0.81", 8082, new CameraListener(MainImage));
 
             addTrackingJoints();
@@ -44,7 +45,17 @@ namespace WpfInterface
             Thread skeletonThread = new Thread(new ThreadStart(skeletonClient.runLoop));
             skeletonThread.Start();
 
+            
+        }
 
+        private void addWinFormsControls(Dictionary<int,System.Windows.Controls.TextBox> UIControls)
+        {
+            UIControls.Add(0, lowerLeft);
+            UIControls.Add(1, lowerRight);
+            UIControls.Add(2, middleLeft);
+            UIControls.Add(3, middleRight);
+            UIControls.Add(4, upperLeft);
+            UIControls.Add(5, upperRight);
         }
 
         private static void addTrackingJoints()

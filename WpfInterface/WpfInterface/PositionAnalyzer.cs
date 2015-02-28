@@ -1,8 +1,9 @@
 ﻿using Microsoft.Kinect;
 using System;
-using System.Diagnostics;
 using System.Threading;
 using System.Windows.Media;
+using System.Collections.Generic;
+using System.Windows;
 namespace WpfInterface
 {
     class PositionAnalyzer
@@ -15,7 +16,7 @@ namespace WpfInterface
         private bool[] volumeBucketStatus = new bool[6];
         private string[] ipaddresses;
         private int mediaSize;
-        
+
         private float bucket1 = 20;
         private float bucket2 = 80;
         private float bucket3 = 130;
@@ -28,8 +29,9 @@ namespace WpfInterface
         private bool bucketSpacing;
         private DateTime lastUpdate = DateTime.Now;
         private bool right;
+        private Dictionary<int, System.Windows.Controls.TextBox> UIControls;
 
-        public PositionAnalyzer(int mediaSize, JointType joint, int buckets, float delta, bool bucketSpacing, string[] ipaddresses, bool right)
+        public PositionAnalyzer(int mediaSize, JointType joint, int buckets, float delta, bool bucketSpacing, string[] ipaddresses, bool right, Dictionary<int, System.Windows.Controls.TextBox> UIControls)
         {
             sumZ = new float[mediaSize];
             this.mediaSize = mediaSize;
@@ -38,6 +40,7 @@ namespace WpfInterface
             this.delta = delta;
             this.bucketSpacing = bucketSpacing;
             this.ipaddresses = ipaddresses;
+            this.UIControls = UIControls;
             for (int i = 0; i < 6; i++)
             {
                 lastUses[i] = DateTime.Now;
@@ -125,6 +128,7 @@ namespace WpfInterface
                 mediaZ = (-mediaZ);
             }
             //Debug.WriteLine(mediaZ);
+            System.Windows.Controls.TextBox t = null;
 
             if (mediaZ > (bucket1 - offset) && mediaZ < (bucket1 + offset))
             {
@@ -133,16 +137,27 @@ namespace WpfInterface
                     Thread thread;
                     if (volumeBucketStatus[0 + plusIndex])
                     {
+
                         thread = new Thread(new VlcController(ipaddresses[0]).noVolume);
                     }
-                    else {
+                    else
+                    {
                         thread = new Thread(new VlcController(ipaddresses[0]).fullVolume);
                     }
                     thread.Start();
+                    if (right)
+                    {
+                        UIControls.TryGetValue(1, out t);
+                    }
+                    else
+                    {
+                        UIControls.TryGetValue(0, out t);
+                    }
                     lastUses[0] = DateTime.Now;
                     volumeBucketStatus[0 + plusIndex] = !volumeBucketStatus[0 + plusIndex];
-                  
+
                 }
+                setCurrentBucket(t, 0 + plusIndex);
                 return Colors.Cyan;
             }
             else if (mediaZ > (bucket2 - offset) && mediaZ < (bucket2 + offset))
@@ -157,12 +172,21 @@ namespace WpfInterface
                     else
                     {
                         thread = new Thread(new VlcController(ipaddresses[1]).fullVolume);
-                    } 
+                    }
                     thread.Start();
+                    if (right)
+                    {
+                        UIControls.TryGetValue(3, out t);
+                    }
+                    else
+                    {
+                        UIControls.TryGetValue(2, out t);
+                    }
                     lastUses[1] = DateTime.Now;
                     volumeBucketStatus[1 + plusIndex] = !volumeBucketStatus[1 + plusIndex];
 
                 }
+                setCurrentBucket(t, 1 + plusIndex);
                 return Colors.Purple;
             }
             else if (mediaZ > (bucket3 - offset) && mediaZ < (bucket3 + offset))
@@ -179,13 +203,44 @@ namespace WpfInterface
                         thread = new Thread(new VlcController(ipaddresses[2]).fullVolume);
                     }
                     thread.Start();
+                    if (right)
+                    {
+                        UIControls.TryGetValue(5, out t);
+                    }
+                    else
+                    {
+                        UIControls.TryGetValue(4, out t);
+                    }
                     lastUses[2] = DateTime.Now;
                     volumeBucketStatus[2 + plusIndex] = !volumeBucketStatus[2 + plusIndex];
 
                 }
+                setCurrentBucket(t, 2 + plusIndex);
                 return Colors.Red;
             }
+
+
             return Colors.Brown;
+        }
+
+        private void setCurrentBucket(System.Windows.Controls.TextBox t, int index)
+        {
+            if (t != null)
+            {
+                Application.Current.Dispatcher.BeginInvoke(new ThreadStart(() =>
+               t.BorderThickness = new Thickness(5, 5, 15, 20)));
+                Application.Current.Dispatcher.BeginInvoke(new ThreadStart(() =>
+              t.Text = volumeBucketStatus[index] == true ? "Volume ON" : "Volume OFF"));
+                foreach (System.Windows.Controls.TextBox c in UIControls.Values)
+                {
+                    if (c.Equals(t))
+                        continue;
+                    Application.Current.Dispatcher.BeginInvoke(new ThreadStart(() =>
+                   c.BorderThickness = new Thickness(5, 5, 5, 5)));
+                    Application.Current.Dispatcher.BeginInvoke(new ThreadStart(() =>
+                   c.Text = volumeBucketStatus[index] == true ? "Volume ON" : "Volume OFF"));
+                }
+            }
         }
 
     }

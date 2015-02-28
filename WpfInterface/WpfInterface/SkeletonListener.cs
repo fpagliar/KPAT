@@ -37,14 +37,16 @@ namespace WpfInterface
         private static PositionAnalyzer leftArmAnalyzer;
         private static PositionAnalyzer rightArmAnalyzer;
         private Canvas skeletonCanvas;
+        private Dictionary<int, System.Windows.Controls.TextBox> UIControls;
 
-        public SkeletonListener(Canvas skeletonCanvas)
+        public SkeletonListener(Canvas skeletonCanvas, Dictionary<int, System.Windows.Controls.TextBox> UIControls)
         {
             this.skeletonCanvas = skeletonCanvas;
             //string[] leftArmIps = new string[] { "192.168 .0.41:8080", "192.168.0.36:8080", "192.168.0.68:8080" };
             string[] rightArmIps = new string[] { "127.0.0.1", "127.0.0.1", "127.0.0.1" };
-            rightArmAnalyzer = new PositionAnalyzer(5, JointType.ElbowRight, 6, 10, false, rightArmIps, true);
-            //leftArmAnalyzer = new PositionAnalyzer(10, JointType.ElbowLeft, 6, 10, false, leftArmIps, false);
+            this.UIControls = UIControls;
+            rightArmAnalyzer = new PositionAnalyzer(5, JointType.ElbowRight, 6, 10, false, rightArmIps, true, UIControls);
+            //leftArmAnalyzer = new PositionAnalyzer(10, JointType.ElbowLeft, 6, 10, false, leftArmIps, false, UIControls);
         }
 
         public void dataArrived(object data)
