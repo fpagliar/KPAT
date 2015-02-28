@@ -42,7 +42,7 @@ namespace WpfInterface
 
         public void fullVolume()
         {
-            runCommandAndGetAnswer("volume 512");
+            runCommandAndGetAnswer("volume 256");
         }
 
         public void noVolume()

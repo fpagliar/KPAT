@@ -29,7 +29,6 @@
         <Button x:Name="SaveButton" Content="Save" HorizontalAlignment="Left" Margin="-242,80,0,0" VerticalAlignment="Top" Width="98" Height="52" Click="SaveButton_Click"/>
         <Button x:Name="LoadButton" Content="Load" HorizontalAlignment="Left" Margin="-242,153,0,0" VerticalAlignment="Top" Width="98" Height="52" Click="LoadButton_Click"/>
         <Button x:Name="CompareButton" Content="Compare" HorizontalAlignment="Left" Margin="474,302,-248,-38" VerticalAlignment="Top" Width="120" Height="36" Click="CompareButton_Click" Grid.Column="1"/>
-        <Button x:Name="saveBestButton" Content="Save Best" HorizontalAlignment="Left" Margin="-242,420,0,-172" VerticalAlignment="Top" Width="153" Height="52" Click="SaveBestButton_Click"/>
         <TextBox x:Name="bestDiff" HorizontalAlignment="Left" Height="51" Margin="-242,342,0,-93" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="98"/>
         <TextBox x:Name="upperRight" HorizontalAlignment="Left" Height="46" Margin="302,-59,-76,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" Grid.Column="1"/>
         <TextBox x:Name="middleRight" HorizontalAlignment="Left" Height="46" Margin="302,160,-76,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" Grid.Column="1"/>

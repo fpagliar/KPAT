@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows;
+using System.Threading;
 
 namespace WpfInterface
 {
@@ -187,6 +188,15 @@ namespace WpfInterface
             }
         }
 
+
+        public static void redraw(Canvas canvas, Skeleton actual, string tag, Color color)
+        {
+            Application.Current.Dispatcher.BeginInvoke(new ThreadStart(() =>
+                DrawingUtils.deleteElements(canvas, tag)));
+            Application.Current.Dispatcher.BeginInvoke(new ThreadStart(() =>
+                SkeletonUtils.DrawSkeleton(canvas, actual, color, tag)));
+        }
+
         #endregion
 
         #region Serialization
@@ -272,11 +282,11 @@ namespace WpfInterface
 
         #region Comparison
 
-        public static bool match(SkeletonRecorder original, SkeletonRecorder imitation)
+        public static bool match(SkeletonRecording original, SkeletonRecording imitation)
         {
             float accumError = 0;
-            SkeletonRecorder safeOriginal = new SkeletonRecorder(original);
-            SkeletonRecorder safeImitation = new SkeletonRecorder(imitation);
+            SkeletonRecording safeOriginal = new SkeletonRecording(original);
+            SkeletonRecording safeImitation = new SkeletonRecording(imitation);
 
             safeOriginal.restart();
             safeImitation.restart();
@@ -299,12 +309,12 @@ namespace WpfInterface
             return accumError < deltaAccum;
         }
 
-        public static float difference(SkeletonRecorder original, SkeletonRecorder imitation)
+        public static float difference(SkeletonRecording original, SkeletonRecording imitation)
         {
             float accumError = 0;
 
-            SkeletonRecorder safeOriginal = new SkeletonRecorder(original);
-            SkeletonRecorder safeImitation = new SkeletonRecorder(imitation);
+            SkeletonRecording safeOriginal = new SkeletonRecording(original);
+            SkeletonRecording safeImitation = new SkeletonRecording(imitation);
 
             safeOriginal.restart();
             safeImitation.restart();
@@ -390,6 +400,12 @@ namespace WpfInterface
             pitch = Math.Atan2(2 * ((y * z) + (w * x)), (w * w) - (x * x) - (y * y) + (z * z)) / Math.PI * 180.0;
             yaw = Math.Asin(2 * ((w * y) - (x * z))) / Math.PI * 180.0;
             roll = Math.Atan2(2 * ((x * y) + (w * z)), (w * w) + (x * x) - (y * y) - (z * z)) / Math.PI * 180.0;
+        }
+
+        public static Skeleton defaultSkeleton(object data)
+        {
+            Skeleton[] skeletons = (Skeleton[])data;
+            return skeletons.Where(s => s.TrackingState == SkeletonTrackingState.Tracked).FirstOrDefault();
         }
 
     }

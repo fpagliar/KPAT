@@ -7,7 +7,7 @@ using Microsoft.Kinect;
 
 namespace WpfInterface
 {
-    class SkeletonRecorder
+    class SkeletonRecording
     {
         private List<Skeleton> skeletons = new List<Skeleton>();
         private IEnumerator<Skeleton> index;
@@ -17,7 +17,7 @@ namespace WpfInterface
         private int fixedLength = -1;
         private bool immutable = false;
 
-        public SkeletonRecorder(SkeletonRecorder original)
+        public SkeletonRecording(SkeletonRecording original)
         {
             foreach (Skeleton skel in original.skeletons)
             {
@@ -28,12 +28,17 @@ namespace WpfInterface
             immutable = true;
         }
 
-        public SkeletonRecorder(string _tag)
+        public string getTag()
+        {
+            return tag;
+        }
+
+        public SkeletonRecording(string _tag)
         {
             tag = _tag;
             end = false;
         }
-        public SkeletonRecorder(string _tag, int length)
+        public SkeletonRecording(string _tag, int length)
         {
             tag = _tag;
             end = false;

@@ -2,20 +2,32 @@
 using System.Net.Sockets;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Collections.Generic;
+using System.Collections.Concurrent;
 
 namespace WpfInterface
 {
     class TcpClient
     {
-        private ClientListener listener;
+        private ConcurrentBag<ClientListener> listeners = new ConcurrentBag<ClientListener>();
         private NetworkStream serverStream;
 
-        public TcpClient(string ip, int port, ClientListener listener)
+        public TcpClient(string ip, int port)
         {
-            this.listener = listener;
             System.Net.Sockets.TcpClient clientSocket = new System.Net.Sockets.TcpClient();
             clientSocket.Connect(ip, port);
             serverStream = clientSocket.GetStream();
+        }
+
+        public void subscribe(ClientListener listener)
+        {
+            listeners.Add(listener);
+        }
+
+        public void unsubscribe(ClientListener listener)
+        {
+            ClientListener l = listener;
+            listeners.TryTake(out l);
         }
 
         public bool hasData()
@@ -31,7 +43,8 @@ namespace WpfInterface
             if (serverStream.DataAvailable)
             {
                 BinaryFormatter serializer = new BinaryFormatter();
-                listener.dataArrived(serializer.Deserialize(serverStream));
+                foreach(ClientListener listener in listeners)
+                    listener.dataArrived(serializer.Deserialize(serverStream));
             }            
         }
 
@@ -45,7 +58,8 @@ namespace WpfInterface
                 if (serverStream.DataAvailable)
                 {
                     BinaryFormatter serializer = new BinaryFormatter();
-                    listener.dataArrived(serializer.Deserialize(serverStream));
+                    foreach (ClientListener listener in listeners)
+                        listener.dataArrived(serializer.Deserialize(serverStream));
                 }
             }            
         }

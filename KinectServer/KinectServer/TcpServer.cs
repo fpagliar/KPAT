@@ -85,7 +85,6 @@ namespace KinectServer
                     clientSocket = serverSocket.AcceptTcpClient();
                     NetworkStream networkStream = clientSocket.GetStream();
                     //Added it to the list of streams I'm communicating with
-                    Debug.WriteLine("NEW CONNECTION");
                     listenerStreams.Add(networkStream);
                 }
             }

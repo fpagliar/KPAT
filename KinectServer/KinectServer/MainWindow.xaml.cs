@@ -50,6 +50,8 @@ namespace KinectServer
 
                 List<String> phrases = new List<string>();
                 phrases.Add("STOP"); //TODO: properties file
+                phrases.Add("START"); //TODO: properties file
+
                 sensor.Start();
                 sensor.ElevationAngle = 7;
 

@@ -59,12 +59,15 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="ArmAnalyzerListener.cs" />
     <Compile Include="CameraListener.cs" />
     <Compile Include="ClientListener.cs" />
+    <Compile Include="CurrentRecording.cs" />
     <Compile Include="DrawingUtils.cs" />
     <Compile Include="PositionAnalyzer.cs" />
+    <Compile Include="RecordingReproducer.cs" />
     <Compile Include="SkeletonListener.cs" />
-    <Compile Include="SkeletonRecorder.cs" />
+    <Compile Include="SkeletonRecording.cs" />
     <Compile Include="SkeletonUtils.cs" />
     <Compile Include="TcpClient.cs" />
     <Compile Include="VlcController.cs" />

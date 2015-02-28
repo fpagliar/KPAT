@@ -23,29 +23,42 @@ namespace WpfInterface
     public partial class MainWindow : Window
     {
         private System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
-        private static TcpClient cameraClient;
         private static TcpClient skeletonClient;
         private static TcpClient voiceClient;
+
+        private static CurrentRecording recordingStream;
+        private static SkeletonRecording loadedMovement;
+        private static bool recording = false;
 
         public MainWindow()
         {
             InitializeComponent();
 
-            //string[] leftArmIps = new string[] { "192.168.0.41:8080", "192.168.0.36:8080", "192.168.0.68:8080" };
-            //string[] rightArmIps = new string[] { "192.168.0.33:8080", "192.168.0.37:8080", "192.168.0.34:8080" };
-            //rightArmAnalyzer = new PositionAnalyzer(5, JointType.ElbowRight, 6, 10, false, rightArmIps, true);
-            //leftArmAnalyzer = new PositionAnalyzer(10, JointType.ElbowLeft, 6, 10, false, leftArmIps, false);
             Dictionary<int, System.Windows.Controls.TextBox> UIControlsSkeleton = new Dictionary<int, System.Windows.Controls.TextBox>();
             Dictionary<int, System.Windows.Controls.TextBox> UIControlsVoiceControl = new Dictionary<int, System.Windows.Controls.TextBox>();
             addWinFormsControlsSkeleton(UIControlsSkeleton);
             addWinFormsControlsVoiceControl(UIControlsVoiceControl);
-            skeletonClient = new TcpClient("192.168.0.81", 8081, new SkeletonListener(skeletonCanvas, UIControlsSkeleton));
-            voiceClient = new TcpClient("192.168.0.81", 8083, new VoiceListener(UIControlsVoiceControl));
+
+            voiceClient = new TcpClient("192.168.0.81", 8083);
+            voiceClient.subscribe(new VoiceListener(UIControlsVoiceControl));
             //cameraClient = new TcpClient("192.168.0.81", 8082, new CameraListener(MainImage));
 
+            skeletonClient = new TcpClient("127.0.0.1", 8081);
+            skeletonClient.subscribe(new SkeletonListener(skeletonCanvas));
+            recordingStream = new CurrentRecording();
+            skeletonClient.subscribe(recordingStream);
+
             addTrackingJoints();
-            //Thread cameraThread = new Thread(new ThreadStart(cameraClient.runLoop));
-            //cameraThread.Start();
+
+            //string[] leftArmIps = new string[] { "192.168 .0.41:8080", "192.168.0.36:8080", "192.168.0.68:8080" };
+            //leftArmAnalyzer = new PositionAnalyzer(10, JointType.ElbowLeft, 6, 10, false, leftArmIps, false, UIControls);
+
+            string[] rightArmIps = new string[] { "127.0.0.1", "127.0.0.1", "127.0.0.1" };
+
+            ArmAnalyzerListener rightArmAnalyzer = new ArmAnalyzerListener(5, JointType.ElbowRight, 6, 10, false, rightArmIps, true, 
+                UIControlsSkeleton);
+            skeletonClient.subscribe(rightArmAnalyzer);
+
             Thread skeletonThread = new Thread(new ThreadStart(skeletonClient.runLoop));
             Thread voiceThread = new Thread(new ThreadStart(voiceClient.runLoop));
             skeletonThread.Start();
@@ -78,82 +91,63 @@ namespace WpfInterface
             SkeletonUtils.addJoint(JointType.ElbowRight);
             SkeletonUtils.addJoint(JointType.WristLeft);
             SkeletonUtils.addJoint(JointType.WristRight);
-            //loop();
         }
 
         #region Button Actions
 
         private void RecordingButton_Click(object sender, RoutedEventArgs e)
         {
-            //if (recording)
-            //{
-            //    // I was recording, I will now stop it
-            //    recording = false;
-            //    RecordingButton.Content = "Start recording";
-            //}
-            //else
-            //{
-            //    // I was not recording, I will now start recording
-            //    recording = true;
-            //    recorder = new SkeletonRecorder(recordingTag);
-            //    RecordingButton.Content = "Stop recording";
-            //}
+            if (recording)
+            {
+                // I was recording, I will now stop it
+                recording = false;
+                RecordingButton.Content = "Start recording";
+                recordingStream.stopRecording();
+            }
+            else
+            {
+                // I was not recording, I will now start recording
+                recording = true;
+                RecordingButton.Content = "Stop recording";
+                recordingStream.startRecording();
+            }
         }
 
         private void PlayButton_Click(object sender, RoutedEventArgs e)
         {
-            //if (playing)
-            //{
-            //    // I was playing, I will now stop it
-            //    playing = false;
-            //    recorder.restart();
-            //    PlayButton.Content = "Play";
-            //}
-            //else
-            //{
-            //    // I was stopped, I will now start playing
-            //    playing = true;
-            //    recording = false;
-            //    PlayButton.Content = "Stop";
-            //}
+            SkeletonRecording recording = recordingStream.getCurrentRecording();
+            if (recording != null)
+            {
+                skeletonClient.subscribe(new RecordingReproducer(skeletonCanvas, recording,
+                    recording.getTag(), Colors.Blue, skeletonClient));
+            }
         }
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            //Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog();
-            //if (dlg.ShowDialog() == true)
-            //{
-            //    recorder.saveToFile(dlg.FileName);
-            //}
-
+            Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog();
+            if (dlg.ShowDialog() == true)
+            {
+                recordingStream.saveRecording(dlg.FileName);
+            }
         }
 
         private void LoadButton_Click(object sender, RoutedEventArgs e)
         {
-            //Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
-            //if (dlg.ShowDialog() == true)
-            //{
-            //    replayer.loadFromFile(dlg.FileName);
-            //    replaying = true;
-            //    stream = new SkeletonRecorder(streamTag, replayer.size());
-            //}
+            Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
+            if (dlg.ShowDialog() == true)
+            {
+                loadedMovement = new SkeletonRecording("loadedMovement");
+                loadedMovement.loadFromFile(dlg.FileName);
+                skeletonClient.subscribe(new RecordingReproducer(skeletonCanvas, loadedMovement,
+                    loadedMovement.getTag(), Colors.Black, skeletonClient));
+            }
         }
 
-        private void CompareButton_Click(object sender, RoutedEventArgs e)
+        private void replayLoadedMovement()
         {
-            //bool ans = SkeletonUtils.match(recorder, replayer);
-            //float diff = SkeletonUtils.difference(recorder, replayer);
-            //speechRejected.Text = "ANS: " + ans + " differece: " + diff + " in " + recorder.size() + " frames" +
-            //    " vs " + replayer.size() + " frames";
-        }
-
-        private void SaveBestButton_Click(object sender, RoutedEventArgs e)
-        {
-            //Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog();
-            //if (dlg.ShowDialog() == true)
-            //{
-            //    bestReproduction.saveToFile(dlg.FileName);
-            //}
+            skeletonClient.subscribe(new RecordingReproducer(skeletonCanvas, loadedMovement,
+                loadedMovement.getTag(), Colors.Black, skeletonClient));
         }
 
         #endregion
@@ -208,6 +202,9 @@ namespace WpfInterface
             timer.Stop();
         }
 
+        private void CompareButton_Click(object sender, RoutedEventArgs e)
+        {
 
+        }
     }
 }
