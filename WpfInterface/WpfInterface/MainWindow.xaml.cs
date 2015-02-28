@@ -35,7 +35,7 @@ namespace WpfInterface
             //rightArmAnalyzer = new PositionAnalyzer(5, JointType.ElbowRight, 6, 10, false, rightArmIps, true);
             //leftArmAnalyzer = new PositionAnalyzer(10, JointType.ElbowLeft, 6, 10, false, leftArmIps, false);
 
-            skeletonClient = new TcpClient("192.168.0.81", 8081, new SkeletonListener(skeletonCanvas));
+            skeletonClient = new TcpClient("127.0.0.1", 8081, new SkeletonListener(skeletonCanvas));
             //cameraClient = new TcpClient("192.168.0.81", 8082, new CameraListener(MainImage));
 
             addTrackingJoints();
@@ -141,6 +141,7 @@ namespace WpfInterface
         {
             Debug.WriteLine("asd");
         }
+
         private void Slider_MouseDown(object sender, MouseEventArgs e)
         {
             Debug.WriteLine("abf");

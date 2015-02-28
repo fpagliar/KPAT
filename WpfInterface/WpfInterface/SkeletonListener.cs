@@ -42,11 +42,10 @@ namespace WpfInterface
         {
             this.skeletonCanvas = skeletonCanvas;
             //string[] leftArmIps = new string[] { "192.168 .0.41:8080", "192.168.0.36:8080", "192.168.0.68:8080" };
-            string[] rightArmIps = new string[] { "192.168.0.11:8080", "192.168.0.11:8080", "192.168.0.11:8080" };
+            string[] rightArmIps = new string[] { "127.0.0.1", "127.0.0.1", "127.0.0.1" };
             rightArmAnalyzer = new PositionAnalyzer(5, JointType.ElbowRight, 6, 10, false, rightArmIps, true);
             //leftArmAnalyzer = new PositionAnalyzer(10, JointType.ElbowLeft, 6, 10, false, leftArmIps, false);
         }
-
 
         public void dataArrived(object data)
         {
@@ -78,10 +77,6 @@ namespace WpfInterface
 
             if (replaying)
             {
-                if (replayer.finished())
-                {
-                    replayer.restart();
-                }
                 //DrawingUtils.deleteElements(skeletonCanvas, replayingTag);
                 //SkeletonUtils.DrawSkeleton(skeletonCanvas, replayer.next(), Colors.Blue, replayingTag);
                 Application.Current.Dispatcher.BeginInvoke(new ThreadStart(() => DrawingUtils.deleteElements(skeletonCanvas, replayingTag)));
@@ -98,25 +93,13 @@ namespace WpfInterface
                     if (bestReproductionDiff > diff)
                     {
                         bestReproductionDiff = diff;
-                        bestReproduction = new SkeletonRecorder(stream);
                     }
                 }
-                if (bestReproduction != null)
-                {
-                    Application.Current.Dispatcher.BeginInvoke(new ThreadStart(() => DrawingUtils.deleteElements(skeletonCanvas, bestReproductionTag)));
-                    Application.Current.Dispatcher.BeginInvoke(new ThreadStart(() => SkeletonUtils.DrawSkeleton(skeletonCanvas, bestReproduction.next(), Colors.Pink, bestReproductionTag)));
-                }
             }
-
-            foreach (Skeleton skel in skeletons)
-            {
-                Application.Current.Dispatcher.BeginInvoke(new ThreadStart(() => DrawingUtils.deleteElements(skeletonCanvas, skel.TrackingId.ToString())));
-                if (skel.TrackingState == SkeletonTrackingState.Tracked)
-                {
-                    Application.Current.Dispatcher.BeginInvoke(new ThreadStart(() => SkeletonUtils.DrawSkeleton(skeletonCanvas, skel, Colors.Cyan, skel.TrackingId.ToString())));
-                }
-            }
-
+            Application.Current.Dispatcher.BeginInvoke(new ThreadStart(() => 
+                DrawingUtils.deleteElements(skeletonCanvas, defaultSkeleton.TrackingId.ToString())));
+            Application.Current.Dispatcher.BeginInvoke(new ThreadStart(() => 
+                SkeletonUtils.DrawSkeleton(skeletonCanvas, defaultSkeleton, Colors.Cyan, defaultSkeleton.TrackingId.ToString())));
         }
     }
 }
