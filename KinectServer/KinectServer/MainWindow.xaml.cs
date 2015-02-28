@@ -29,7 +29,7 @@ namespace KinectServer
         private static VoiceController voiceController;
         private static TcpServer skeletonServer = new TcpServer(8081);
         private static TcpServer cameraServer = new TcpServer(8082);
-        //private static TcpServer voiceServer = new TcpServer(8081);
+        private static TcpServer voiceServer = new TcpServer(8083);
 
         public MainWindow()
         {
@@ -60,7 +60,10 @@ namespace KinectServer
 
         void Recognizer_SpeechRecognized(object sender, Microsoft.Speech.Recognition.SpeechRecognizedEventArgs e)
         {
-            //voiceServer.informListeners(e);
+            if (e.Result.Confidence >= voiceController.RecognitionConfidence)
+            {
+                voiceServer.informListeners(e.Result.Confidence + "#" + e.Result.Text);
+            }
         }
 
         void Sensor_ColorFrameReady(object sender, ColorImageFrameReadyEventArgs e)
@@ -71,8 +74,8 @@ namespace KinectServer
                 {
                     BitmapSource source = WindowUtils.ToBitmap(frame);
                     MainImage.Source = source;
-                    int _width = (int) source.Width;
-                    int _height = (int) source.Height;
+                    int _width = (int)source.Width;
+                    int _height = (int)source.Height;
                     byte[] _pixels = new byte[_width * _height * WindowUtils.BYTES_PER_PIXEL];
                     frame.CopyPixelDataTo(_pixels);
                     //object[] data = new object[] { _width, _height, _pixels };
@@ -83,7 +86,7 @@ namespace KinectServer
                     cameraServer.informListeners(data);
                 }
             }
-        }   
+        }
 
         void Sensor_SkeletonFrameReady(object sender, SkeletonFrameReadyEventArgs e)
         {
