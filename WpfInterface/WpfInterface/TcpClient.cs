@@ -44,6 +44,7 @@ namespace WpfInterface
             {
                 if (serverStream.DataAvailable)
                 {
+                    Debug.WriteLine("asd");
                     BinaryFormatter serializer = new BinaryFormatter();
                     listener.dataArrived(serializer.Deserialize(serverStream));
                 }

@@ -30,19 +30,14 @@ namespace WpfInterface
         {
             InitializeComponent();
 
-            //string[] leftArmIps = new string[] { "192.168.0.41:8080", "192.168.0.36:8080", "192.168.0.68:8080" };
-            //string[] rightArmIps = new string[] { "192.168.0.33:8080", "192.168.0.37:8080", "192.168.0.34:8080" };
-            //rightArmAnalyzer = new PositionAnalyzer(5, JointType.ElbowRight, 6, 10, false, rightArmIps, true);
-            //leftArmAnalyzer = new PositionAnalyzer(10, JointType.ElbowLeft, 6, 10, false, leftArmIps, false);
-
             skeletonClient = new TcpClient("192.168.0.81", 8081, new SkeletonListener(skeletonCanvas));
             //cameraClient = new TcpClient("192.168.0.81", 8082, new CameraListener(MainImage));
 
             addTrackingJoints();
-            //Thread thread = new Thread(new ThreadStart(cameraClient.runLoop));
-            //thread.Start();
-            Thread other = new Thread(new ThreadStart(skeletonClient.runLoop));
-            other.Start();
+            //Thread cameraThread = new Thread(new ThreadStart(cameraClient.runLoop));
+            //cameraThread.Start();
+            Thread skeletonThread = new Thread(new ThreadStart(skeletonClient.runLoop));
+            skeletonThread.Start();
 
         }
 

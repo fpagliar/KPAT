@@ -41,10 +41,10 @@ namespace WpfInterface
         public SkeletonListener(Canvas skeletonCanvas)
         {
             this.skeletonCanvas = skeletonCanvas;
-            string[] leftArmIps = new string[] { "192.168.0.41:8080", "192.168.0.36:8080", "192.168.0.68:8080" };
-            string[] rightArmIps = new string[] { "192.168.0.33:8080", "192.168.0.37:8080", "192.168.0.34:8080" };
+            //string[] leftArmIps = new string[] { "192.168 .0.41:8080", "192.168.0.36:8080", "192.168.0.68:8080" };
+            string[] rightArmIps = new string[] { "192.168.0.11:8080", "192.168.0.11:8080", "192.168.0.11:8080" };
             rightArmAnalyzer = new PositionAnalyzer(5, JointType.ElbowRight, 6, 10, false, rightArmIps, true);
-            leftArmAnalyzer = new PositionAnalyzer(10, JointType.ElbowLeft, 6, 10, false, leftArmIps, false);
+            //leftArmAnalyzer = new PositionAnalyzer(10, JointType.ElbowLeft, 6, 10, false, leftArmIps, false);
         }
 
 
@@ -59,7 +59,7 @@ namespace WpfInterface
             }
 
             //leftArmAnalyzer.checkPosition(defaultSkeleton);
-            //Color color = rightArmAnalyzer.checkPosition(defaultSkeleton);
+            Color color = rightArmAnalyzer.checkPosition(defaultSkeleton);
             //if(color != Colors.Peru)
             //    SkeletonUtils.DrawSkeleton(skeletonCanvas, defaultSkeleton, color, "posskells");
 

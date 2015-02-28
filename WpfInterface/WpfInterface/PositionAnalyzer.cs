@@ -12,6 +12,7 @@ namespace WpfInterface
 
         private float[] sumZ;
         private DateTime[] lastUses = new DateTime[6];
+        private bool[] volumeBucketStatus = new bool[6];
         private string[] ipaddresses;
         private int mediaSize;
         
@@ -40,6 +41,7 @@ namespace WpfInterface
             for (int i = 0; i < 6; i++)
             {
                 lastUses[i] = DateTime.Now;
+                volumeBucketStatus[i] = true;
             }
             this.right = right;
         }
@@ -58,7 +60,16 @@ namespace WpfInterface
         {
             for (int i = 0; i < ipaddresses.Length; i++)
             {
-                Thread thread = new Thread(new VlcController(ipaddresses[i]).volume);
+                Thread thread = new Thread(new VlcController(ipaddresses[i]).fullVolume);
+                thread.Start();
+            }
+        }
+
+        public void noVolume()
+        {
+            for (int i = 0; i < ipaddresses.Length; i++)
+            {
+                Thread thread = new Thread(new VlcController(ipaddresses[i]).noVolume);
                 thread.Start();
             }
         }
@@ -107,8 +118,10 @@ namespace WpfInterface
                 mediaZ += sumZ[i];
             }
             mediaZ /= sumZ.Length;
+            int plusIndex = 0;
             if (!right)
             {
+                plusIndex = 3;
                 mediaZ = (-mediaZ);
             }
             //Debug.WriteLine(mediaZ);
@@ -117,9 +130,18 @@ namespace WpfInterface
             {
                 if (lastUses[0].AddSeconds(secsDelay) < DateTime.Now)
                 {
-                    Thread thread = new Thread(new VlcController(ipaddresses[0]).run);
+                    Thread thread;
+                    if (volumeBucketStatus[0 + plusIndex])
+                    {
+                        thread = new Thread(new VlcController(ipaddresses[0]).noVolume);
+                    }
+                    else {
+                        thread = new Thread(new VlcController(ipaddresses[0]).fullVolume);
+                    }
                     thread.Start();
                     lastUses[0] = DateTime.Now;
+                    volumeBucketStatus[0 + plusIndex] = !volumeBucketStatus[0 + plusIndex];
+                  
                 }
                 return Colors.Cyan;
             }
@@ -127,9 +149,19 @@ namespace WpfInterface
             {
                 if (lastUses[1].AddSeconds(secsDelay) < DateTime.Now)
                 {
-                    Thread thread = new Thread(new VlcController(ipaddresses[1]).run);
+                    Thread thread;
+                    if (volumeBucketStatus[1 + plusIndex])
+                    {
+                        thread = new Thread(new VlcController(ipaddresses[1]).noVolume);
+                    }
+                    else
+                    {
+                        thread = new Thread(new VlcController(ipaddresses[1]).fullVolume);
+                    } 
                     thread.Start();
                     lastUses[1] = DateTime.Now;
+                    volumeBucketStatus[1 + plusIndex] = !volumeBucketStatus[1 + plusIndex];
+
                 }
                 return Colors.Purple;
             }
@@ -137,9 +169,19 @@ namespace WpfInterface
             {
                 if (lastUses[2].AddSeconds(secsDelay) < DateTime.Now)
                 {
-                    Thread thread = new Thread(new VlcController(ipaddresses[2]).run);
+                    Thread thread;
+                    if (volumeBucketStatus[2 + plusIndex])
+                    {
+                        thread = new Thread(new VlcController(ipaddresses[2]).noVolume);
+                    }
+                    else
+                    {
+                        thread = new Thread(new VlcController(ipaddresses[2]).fullVolume);
+                    }
                     thread.Start();
                     lastUses[2] = DateTime.Now;
+                    volumeBucketStatus[2 + plusIndex] = !volumeBucketStatus[2 + plusIndex];
+
                 }
                 return Colors.Red;
             }

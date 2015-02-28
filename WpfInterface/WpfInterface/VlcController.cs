@@ -21,9 +21,16 @@ namespace WpfInterface
             //Debug.WriteLine("TOGGLE: " + resp.Headers);
         }
 
-        public void volume()
+        public void fullVolume()
         {
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://" + ip + "/requests/status.xml?" + "command=volume&val=512");
+            request.Headers["Authorization"] = "Basic " + password("1234");
+            WebResponse resp = request.GetResponse();
+        }
+
+        public void noVolume()
+        {
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://" + ip + "/requests/status.xml?" + "command=volume&val=1");
             request.Headers["Authorization"] = "Basic " + password("1234");
             WebResponse resp = request.GetResponse();
         }
