@@ -69,6 +69,7 @@
     <Compile Include="TcpClient.cs" />
     <Compile Include="VlcController.cs" />
     <Compile Include="VoiceController.cs" />
+    <Compile Include="VoiceListener.cs" />
     <Compile Include="WindowUtils.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>

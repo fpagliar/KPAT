@@ -25,6 +25,7 @@ namespace WpfInterface
         private System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
         private static TcpClient cameraClient;
         private static TcpClient skeletonClient;
+        private static TcpClient voiceClient;
 
         public MainWindow()
         {
@@ -34,21 +35,26 @@ namespace WpfInterface
             //string[] rightArmIps = new string[] { "192.168.0.33:8080", "192.168.0.37:8080", "192.168.0.34:8080" };
             //rightArmAnalyzer = new PositionAnalyzer(5, JointType.ElbowRight, 6, 10, false, rightArmIps, true);
             //leftArmAnalyzer = new PositionAnalyzer(10, JointType.ElbowLeft, 6, 10, false, leftArmIps, false);
-            Dictionary<int, System.Windows.Controls.TextBox> UIControls = new Dictionary<int ,System.Windows.Controls.TextBox>();
-            addWinFormsControls(UIControls);
-            skeletonClient = new TcpClient("192.168.0.81", 8081, new SkeletonListener(skeletonCanvas, UIControls));
+            Dictionary<int, System.Windows.Controls.TextBox> UIControlsSkeleton = new Dictionary<int, System.Windows.Controls.TextBox>();
+            Dictionary<int, System.Windows.Controls.TextBox> UIControlsVoiceControl = new Dictionary<int, System.Windows.Controls.TextBox>();
+            addWinFormsControlsSkeleton(UIControlsSkeleton);
+            addWinFormsControlsVoiceControl(UIControlsVoiceControl);
+            skeletonClient = new TcpClient("192.168.0.81", 8081, new SkeletonListener(skeletonCanvas, UIControlsSkeleton));
+            voiceClient = new TcpClient("192.168.0.81", 8083, new VoiceListener(UIControlsVoiceControl));
             //cameraClient = new TcpClient("192.168.0.81", 8082, new CameraListener(MainImage));
 
             addTrackingJoints();
             //Thread cameraThread = new Thread(new ThreadStart(cameraClient.runLoop));
             //cameraThread.Start();
             Thread skeletonThread = new Thread(new ThreadStart(skeletonClient.runLoop));
+            Thread voiceThread = new Thread(new ThreadStart(voiceClient.runLoop));
             skeletonThread.Start();
+            voiceThread.Start();
 
-            
+
         }
 
-        private void addWinFormsControls(Dictionary<int,System.Windows.Controls.TextBox> UIControls)
+        private void addWinFormsControlsSkeleton(Dictionary<int, System.Windows.Controls.TextBox> UIControls)
         {
             UIControls.Add(0, lowerLeft);
             UIControls.Add(1, lowerRight);
@@ -56,6 +62,11 @@ namespace WpfInterface
             UIControls.Add(3, middleRight);
             UIControls.Add(4, upperLeft);
             UIControls.Add(5, upperRight);
+        }
+
+        private void addWinFormsControlsVoiceControl(Dictionary<int, System.Windows.Controls.TextBox> UIControls)
+        {
+            UIControls.Add(0, speechRecognized);
         }
 
         private static void addTrackingJoints()
@@ -162,18 +173,18 @@ namespace WpfInterface
         {
 
             //timer.Interval = 1000;
-           
+
             //// ... Get Slider reference.
             //var slider = sender as Slider;
-            
+
             //// ... Get Value.
             //double value = slider.Value;
-                
+
             //if (sensor != null)
             //{
             //    timer.Start();
             //    timer.Tick += timer_Tick;
-                    
+
             //    // ... Set Window Title.
             //    this.Title = "Value: " + value.ToString("0.0") + "/" + slider.Maximum;
             //    try
@@ -186,7 +197,7 @@ namespace WpfInterface
             //    finally {
             //        sliderAngle.IsEnabled = false;
             //    }
-                
+
             //}
 
         }
@@ -197,6 +208,6 @@ namespace WpfInterface
             timer.Stop();
         }
 
-      
+
     }
 }
