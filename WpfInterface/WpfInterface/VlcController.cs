@@ -1,51 +1,81 @@
 ﻿using System.Diagnostics;
 using System.Net;
+using System.Net.Sockets;
+using System.Text;
 
 namespace WpfInterface
 {
     class VlcController
     {
-        private string ip;
+        private NetworkStream serverStream;
+        private static int VOL_STEP = 10;
+        private static int port = 9999;
 
         public VlcController(string ip)
         {
-            this.ip = ip;
+            System.Net.Sockets.TcpClient clientSocket = new System.Net.Sockets.TcpClient();
+            clientSocket.Connect(ip, port);
+            serverStream = clientSocket.GetStream();
         }
 
-        public void run()
+        public void togglePlay()
         {
-            //Debug.WriteLine("TOGGLE");
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://" + ip + "/requests/status.xml?" + "command=pl_pause");
-            request.Headers["Authorization"] = "Basic " + password("1234");
-            WebResponse resp = request.GetResponse();
-            //Debug.WriteLine("TOGGLE: " + resp.Headers);
+            runCommandAndGetAnswer("pause");
+        }
+
+        public void setVolume(int value)
+        {
+            runCommandAndGetAnswer("volume " + value);
+        }
+
+        public void volumeStepUp()
+        {
+            runCommandAndGetAnswer("volup " + VOL_STEP);
+        }
+
+        public void volumeStepDown()
+        {
+            runCommandAndGetAnswer("voldown " + VOL_STEP);
         }
 
         public void fullVolume()
         {
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://" + ip + "/requests/status.xml?" + "command=volume&val=512");
-            request.Headers["Authorization"] = "Basic " + password("1234");
-            WebResponse resp = request.GetResponse();
+            runCommandAndGetAnswer("volume 512");
         }
 
         public void noVolume()
         {
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://" + ip + "/requests/status.xml?" + "command=volume&val=1");
-            request.Headers["Authorization"] = "Basic " + password("1234");
-            WebResponse resp = request.GetResponse();
+            runCommandAndGetAnswer("volume 1");
         }
 
         public void stop()
         {
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://" + ip + "/requests/status.xml?" + "command=pl_stop");
-            request.Headers["Authorization"] = "Basic " + password("1234");
-            WebResponse resp = request.GetResponse();
+            runCommandAndGetAnswer("stop");
         }
 
-        private string password(string pass)
+        public void faster()
         {
-            var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(":" + pass); //No username
-            return System.Convert.ToBase64String(plainTextBytes);
+            runCommandAndGetAnswer("faster");
+        }
+
+        public void slower()
+        {
+            runCommandAndGetAnswer("slower");
+        }
+
+        public void normal()
+        {
+            runCommandAndGetAnswer("normal");
+        }
+
+        private string runCommandAndGetAnswer(string command)
+        {
+            byte[] bytes = Encoding.ASCII.GetBytes(command + "\n");
+            serverStream.Write(bytes, 0, bytes.Length);
+            serverStream.Flush();
+            byte[] read = new byte[1000];
+            int length = serverStream.Read(read, 0, read.Length);
+            return Encoding.ASCII.GetString(read, 0, length);
         }
     }
 }

@@ -48,9 +48,9 @@ namespace KinectServer
                 }
                 catch (IOException)
                 {
-                    //IOException can happen for multiple reasons, but basically, that channel
-                    //has problems and I don't want it, kicking it out. If you want to reconnect,
-                    //just get a new one.
+                    // IOException can happen for multiple reasons, but basically, that channel
+                    // has problems and I don't want it, kicking it out. If you want to reconnect,
+                    // just get a new one.
                     fuckedStreams.Add(stream);
                 }
             }
