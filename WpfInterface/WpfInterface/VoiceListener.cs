@@ -6,13 +6,17 @@ namespace WpfInterface
     class VoiceListener : ClientListener
     {
         private Dictionary<int, System.Windows.Controls.TextBox> UIControls;
-        private string[] leftAndRightArmsIps;
+        private List<VlcController> vlcControllers;
 
 
-        public VoiceListener(Dictionary<int, System.Windows.Controls.TextBox> UIControls)
+        public VoiceListener(Dictionary<int, System.Windows.Controls.TextBox> UIControls , List<VlcController> vlcControllers1, List<VlcController> vlcControllers2) 
         {
             this.UIControls = UIControls;
-            this.leftAndRightArmsIps = new string[] { "127.0.0.1", "127.0.0.1", "127.0.0.1", "127.0.0.1", "127.0.0.1", "127.0.0.1" };
+            this.vlcControllers = vlcControllers1;
+            foreach (VlcController item in vlcControllers2)
+            {
+                this.vlcControllers.Add(item);   
+            }
 
         }
 
@@ -35,9 +39,9 @@ namespace WpfInterface
 
         private void toggleStartAction()
         {
-            for (int i = 0; i < leftAndRightArmsIps.Length; i++)
+            for (int i = 0; i < vlcControllers.Count; i++)
             {
-                Thread thread = new Thread(new VlcController(leftAndRightArmsIps[i]).togglePlay);
+                Thread thread = new Thread(vlcControllers[i].togglePlay);
                 thread.Start();
             }
             return;
@@ -45,9 +49,9 @@ namespace WpfInterface
 
         private void toggleStopAction()
         {
-            for (int i = 0; i < leftAndRightArmsIps.Length; i++)
+            for (int i = 0; i < vlcControllers.Count; i++)
             {
-                Thread thread = new Thread(new VlcController(leftAndRightArmsIps[i]).togglePlay);
+                Thread thread = new Thread(vlcControllers[i].togglePlay);
                 thread.Start();
             }
             return;

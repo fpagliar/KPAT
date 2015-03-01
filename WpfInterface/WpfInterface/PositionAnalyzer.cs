@@ -14,7 +14,7 @@ namespace WpfInterface
         private float[] sumZ;
         private DateTime[] lastUses = new DateTime[6];
         private bool[] volumeBucketStatus = new bool[6];
-        private string[] ipaddresses;
+        private List<VlcController> vlcControllers;
         private int mediaSize;
 
         private float bucket1 = 20;
@@ -31,7 +31,7 @@ namespace WpfInterface
         private bool right;
         private Dictionary<int, System.Windows.Controls.TextBox> UIControls;
 
-        public PositionAnalyzer(int mediaSize, JointType joint, int buckets, float delta, bool bucketSpacing, string[] ipaddresses, bool right, Dictionary<int, System.Windows.Controls.TextBox> UIControls)
+        public PositionAnalyzer(int mediaSize, JointType joint, int buckets, float delta, bool bucketSpacing, List<VlcController> vlcControllers, bool right, Dictionary<int, System.Windows.Controls.TextBox> UIControls)
         {
             sumZ = new float[mediaSize];
             this.mediaSize = mediaSize;
@@ -39,7 +39,7 @@ namespace WpfInterface
             this.buckets = buckets;
             this.delta = delta;
             this.bucketSpacing = bucketSpacing;
-            this.ipaddresses = ipaddresses;
+            this.vlcControllers = vlcControllers;
             this.UIControls = UIControls;
             for (int i = 0; i < 6; i++)
             {
@@ -49,30 +49,30 @@ namespace WpfInterface
             this.right = right;
         }
 
-        public void stop()
+        private void stop()
         {
-            for (int i = 0; i < ipaddresses.Length; i++)
+            for (int i = 0; i < vlcControllers.Count; i++)
             {
-                Thread thread = new Thread(new VlcController(ipaddresses[i]).stop);
+                Thread thread = new Thread(vlcControllers[i].stop);
                 thread.Start();
             }
 
         }
 
-        public void fullVolume()
+        private void fullVolume()
         {
-            for (int i = 0; i < ipaddresses.Length; i++)
+            for (int i = 0; i < vlcControllers.Count; i++)
             {
-                Thread thread = new Thread(new VlcController(ipaddresses[i]).fullVolume);
+                Thread thread = new Thread(vlcControllers[i].fullVolume);
                 thread.Start();
             }
         }
 
-        public void noVolume()
+        private void noVolume()
         {
-            for (int i = 0; i < ipaddresses.Length; i++)
+            for (int i = 0; i < vlcControllers.Count; i++)
             {
-                Thread thread = new Thread(new VlcController(ipaddresses[i]).noVolume);
+                Thread thread = new Thread(vlcControllers[i].noVolume);
                 thread.Start();
             }
         }
@@ -138,11 +138,11 @@ namespace WpfInterface
                     if (volumeBucketStatus[0 + plusIndex])
                     {
 
-                        thread = new Thread(new VlcController(ipaddresses[0]).noVolume);
+                        thread = new Thread(vlcControllers[0].noVolume);
                     }
                     else
                     {
-                        thread = new Thread(new VlcController(ipaddresses[0]).fullVolume);
+                        thread = new Thread(vlcControllers[0].fullVolume);
                     }
                     thread.Start();
                     if (right)
@@ -167,11 +167,11 @@ namespace WpfInterface
                     Thread thread;
                     if (volumeBucketStatus[1 + plusIndex])
                     {
-                        thread = new Thread(new VlcController(ipaddresses[1]).noVolume);
+                        thread = new Thread(vlcControllers[1].noVolume);
                     }
                     else
                     {
-                        thread = new Thread(new VlcController(ipaddresses[1]).fullVolume);
+                        thread = new Thread(vlcControllers[1].fullVolume);
                     }
                     thread.Start();
                     if (right)
@@ -196,11 +196,11 @@ namespace WpfInterface
                     Thread thread;
                     if (volumeBucketStatus[2 + plusIndex])
                     {
-                        thread = new Thread(new VlcController(ipaddresses[2]).noVolume);
+                        thread = new Thread(vlcControllers[2].noVolume);
                     }
                     else
                     {
-                        thread = new Thread(new VlcController(ipaddresses[2]).fullVolume);
+                        thread = new Thread(vlcControllers[2].fullVolume);
                     }
                     thread.Start();
                     if (right)

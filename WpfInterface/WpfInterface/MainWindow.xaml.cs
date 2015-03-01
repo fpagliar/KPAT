@@ -45,8 +45,23 @@ namespace WpfInterface
             addWinFormsControlsSkeleton(UIControlsSkeleton);
             addWinFormsControlsVoiceControl(UIControlsVoiceControl);
 
+            string[] leftArmIps = new string[] { "127.0.0.1", "127.0.0.1", "127.0.0.1" };
+            string[] rightArmIps = new string[] { "127.0.0.1", "127.0.0.1", "127.0.0.1" };
+
+            List<VlcController> RightVLCControllers = new List<VlcController>();
+            List<VlcController> LeftVLCControllers = new List<VlcController>();
+            foreach (String ip in leftArmIps)
+            {
+                LeftVLCControllers.Add(new VlcController(ip));
+            }
+            foreach (String ip in rightArmIps)
+            {
+                RightVLCControllers.Add(new VlcController(ip));
+            }
+         
+
             voiceClient = new TcpClient(serverIP, 8083);
-            voiceClient.subscribe(new VoiceListener(UIControlsVoiceControl));
+            voiceClient.subscribe(new VoiceListener(UIControlsVoiceControl, LeftVLCControllers , RightVLCControllers));
             //cameraClient = new TcpClient(serverIP, 8082, new CameraListener(MainImage));
 
             skeletonClient = new TcpClient(serverIP, 8081);
@@ -56,12 +71,11 @@ namespace WpfInterface
 
             addTrackingJoints();
 
-            //string[] leftArmIps = new string[] { "192.168 .0.41:8080", "192.168.0.36:8080", "192.168.0.68:8080" };
-            //leftArmAnalyzer = new PositionAnalyzer(10, JointType.ElbowLeft, 6, 10, false, leftArmIps, false, UIControls);
+            ArmAnalyzerListener rightArmAnalyzer = new ArmAnalyzerListener(5, JointType.ElbowRight, 6, 10, false, RightVLCControllers, true,
+                UIControlsSkeleton);
+            ArmAnalyzerListener leftArmAnalyzer = new ArmAnalyzerListener(5, JointType.ElbowRight, 6, 10, false, LeftVLCControllers, true,
+                UIControlsSkeleton);
 
-            //string[] rightArmIps = new string[] { "127.0.0.1", "127.0.0.1", "127.0.0.1" };
-            //ArmAnalyzerListener rightArmAnalyzer = new ArmAnalyzerListener(5, JointType.ElbowRight, 6, 10, false, rightArmIps, true, 
-            //    UIControlsSkeleton);
             //skeletonClient.subscribe(rightArmAnalyzer);
 
             Thread skeletonThread = new Thread(new ThreadStart(skeletonClient.runLoop));

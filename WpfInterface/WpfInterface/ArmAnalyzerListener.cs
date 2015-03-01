@@ -11,10 +11,10 @@ namespace WpfInterface
     {
         private PositionAnalyzer analyzer;
 
-        public ArmAnalyzerListener(int mediaSize, JointType joint, int buckets, float delta, bool bucketSpacing, string[] ipAddresses,
+        public ArmAnalyzerListener(int mediaSize, JointType joint, int buckets, float delta, bool bucketSpacing, List<VlcController> vlcControllers,
             bool right, Dictionary<int, System.Windows.Controls.TextBox> UIControls)
         {
-            analyzer = new PositionAnalyzer(mediaSize, joint, buckets, delta, bucketSpacing, ipAddresses, right, UIControls);
+            analyzer = new PositionAnalyzer(mediaSize, joint, buckets, delta, bucketSpacing, vlcControllers, right, UIControls);
         }
 
 
