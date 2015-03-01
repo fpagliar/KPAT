@@ -12,11 +12,13 @@ namespace WpfInterface
         private SkeletonRecording movement;
         private SkeletonRecording stream;
         private int threshold = 170;
+        private Action action;
 
-        public MovementAnalyzer(SkeletonRecording movement, string tag)
+        public MovementAnalyzer(SkeletonRecording movement, string tag, Action action)
         {
             stream = new SkeletonRecording(tag, movement.size());
             this.movement = movement;
+            this.action = action;
         }
 
         public void dataArrived(object data)
@@ -33,7 +35,7 @@ namespace WpfInterface
                 float diff = SkeletonUtils.difference(stream, movement);
                 if (diff < threshold)
                 {
-                    // Run action
+                    action.perform();
                 }
             }
         }

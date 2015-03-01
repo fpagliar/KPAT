@@ -36,6 +36,8 @@ namespace WpfInterface
         private int gesturePrecision = 10;
         private int bucketOffset = 15;
 
+        List<VlcController> allVLCControllers = new List<VlcController>();
+
         public MainWindow()
         {
             InitializeComponent();
@@ -52,13 +54,16 @@ namespace WpfInterface
             List<VlcController> LeftVLCControllers = new List<VlcController>();
             foreach (String ip in leftArmIps)
             {
-                LeftVLCControllers.Add(new VlcController(ip));
+                VlcController tmp = new VlcController(ip);
+                LeftVLCControllers.Add(tmp);
+                allVLCControllers.Add(tmp);
             }
             foreach (String ip in rightArmIps)
             {
-                RightVLCControllers.Add(new VlcController(ip));
+                VlcController tmp = new VlcController(ip);
+                RightVLCControllers.Add(tmp);
+                allVLCControllers.Add(tmp);
             }
-         
 
             voiceClient = new TcpClient(serverIP, 8083);
             voiceClient.subscribe(new VoiceListener(UIControlsVoiceControl, LeftVLCControllers , RightVLCControllers));
@@ -160,7 +165,7 @@ namespace WpfInterface
                     Colors.Black, skeletonClient));
 
                 // Loading movement to analyzer
-                skeletonClient.subscribe(new MovementAnalyzer(loadedMovement, "movementAnalyzerStream"));
+                skeletonClient.subscribe(new MovementAnalyzer(loadedMovement, "movementAnalyzerStream", new SlowerAction(allVLCControllers)));
             }
         }
 
@@ -294,6 +299,7 @@ namespace WpfInterface
         {
             Environment.Exit(0);
         }
+
         private void mnuAbout(object sender, RoutedEventArgs e)
         {
             System.Windows.MessageBox.Show("Final Project - KPAT - Ver1.0 ");
