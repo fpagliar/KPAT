@@ -15,6 +15,9 @@ using System.Windows.Documents;
 using System.Windows.Media;
 using System.Windows.Controls;
 using System.Windows.Forms;
+using Microsoft.VisualBasic;
+using System.Text.RegularExpressions;
+
 namespace WpfInterface
 {
     /// <summary>
@@ -29,6 +32,9 @@ namespace WpfInterface
         private static CurrentRecording recordingStream;
         private static SkeletonRecording loadedMovement;
         private static bool recording = false;
+        private String serverIP = "192.168.0.81";
+        private int gesturePrecision = 10;
+        private int bucketOffset = 15;
 
         public MainWindow()
         {
@@ -39,11 +45,11 @@ namespace WpfInterface
             addWinFormsControlsSkeleton(UIControlsSkeleton);
             addWinFormsControlsVoiceControl(UIControlsVoiceControl);
 
-            voiceClient = new TcpClient("192.168.0.81", 8083);
+            voiceClient = new TcpClient(serverIP, 8083);
             voiceClient.subscribe(new VoiceListener(UIControlsVoiceControl));
-            //cameraClient = new TcpClient("192.168.0.81", 8082, new CameraListener(MainImage));
+            //cameraClient = new TcpClient(serverIP, 8082, new CameraListener(MainImage));
 
-            skeletonClient = new TcpClient("127.0.0.1", 8081);
+            skeletonClient = new TcpClient(serverIP, 8081);
             skeletonClient.subscribe(new SkeletonListener(skeletonCanvas));
             recordingStream = new CurrentRecording();
             skeletonClient.subscribe(recordingStream);
@@ -205,6 +211,78 @@ namespace WpfInterface
         private void CompareButton_Click(object sender, RoutedEventArgs e)
         {
 
+        }
+
+
+        private void mnuServerip(object sender, RoutedEventArgs e)
+        {
+            String IP = Microsoft.VisualBasic.Interaction.InputBox("Enter the Server IP Address", "KPAT",this.serverIP);
+            Match match = Regex.Match(IP, @"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}");
+            if (match.Success)
+            {
+                this.serverIP = IP;
+                System.Windows.MessageBox.Show("Succesfully Changed Server IP Address to: " + this.serverIP, "Success", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+            }
+            else {
+                System.Windows.MessageBox.Show("Error - You Have Provided an Invalid IP", "Error" ,  MessageBoxButton.OK,  MessageBoxImage.Error);
+            }
+    
+        }
+        private void mnuVLCip(object sender, RoutedEventArgs e)
+        {
+            String IP = Microsoft.VisualBasic.Interaction.InputBox("Enter the 6 VLC Ips Separated by ';' Ex: 192.168.0.1;192.168.0.2 ... etc", "KPAT", this.serverIP);
+            String[] IPs = IP.Split(';');
+            if (IPs.Length != 6) {
+                System.Windows.MessageBox.Show("Error - You Have to Provide 6 Valid IPs", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;         
+            }
+            foreach (String i in IPs)
+            {
+                Match match = Regex.Match(IP, @"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}");
+                if (!match.Success) {
+                    System.Windows.MessageBox.Show("Error - You Have to Provide 6 Valid IPs", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;         
+                }
+            }
+            foreach (String i in IPs)
+            {
+                //DO Something here with the 6 Valid IPs
+            }
+        }
+        private void mnuBucketoffset(object sender, RoutedEventArgs e)
+        {
+            String resp = Microsoft.VisualBasic.Interaction.InputBox("Enter the Bucket Offset", "KPAT", this.bucketOffset.ToString());
+            int n;
+            bool isNumeric = int.TryParse(resp, out n);
+            if (isNumeric)
+            {
+                this.bucketOffset = n;
+            }
+            else
+            {
+                System.Windows.MessageBox.Show("Error - You Have Provided an Invalid Value", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+        private void mnuGestureprecision(object sender, RoutedEventArgs e)
+        {
+            String resp = Microsoft.VisualBasic.Interaction.InputBox("Enter the Gesture Precision", "KPAT", this.gesturePrecision.ToString());
+            int n;
+            bool isNumeric = int.TryParse(resp, out n);
+            if (isNumeric)
+            {
+                this.gesturePrecision = n;
+            }
+            else {
+                System.Windows.MessageBox.Show("Error - You Have Provided an Invalid Value", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+        private void mnuExit(object sender, RoutedEventArgs e)
+        {
+            Environment.Exit(0);
+        }
+        private void mnuAbout(object sender, RoutedEventArgs e)
+        {
+            System.Windows.MessageBox.Show("Final Project - KPAT - Ver1.0 ");
         }
     }
 }
