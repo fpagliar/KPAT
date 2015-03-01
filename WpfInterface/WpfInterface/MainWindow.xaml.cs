@@ -59,18 +59,15 @@ namespace WpfInterface
             //string[] leftArmIps = new string[] { "192.168 .0.41:8080", "192.168.0.36:8080", "192.168.0.68:8080" };
             //leftArmAnalyzer = new PositionAnalyzer(10, JointType.ElbowLeft, 6, 10, false, leftArmIps, false, UIControls);
 
-            string[] rightArmIps = new string[] { "127.0.0.1", "127.0.0.1", "127.0.0.1" };
-
-            ArmAnalyzerListener rightArmAnalyzer = new ArmAnalyzerListener(5, JointType.ElbowRight, 6, 10, false, rightArmIps, true, 
-                UIControlsSkeleton);
-            skeletonClient.subscribe(rightArmAnalyzer);
+            //string[] rightArmIps = new string[] { "127.0.0.1", "127.0.0.1", "127.0.0.1" };
+            //ArmAnalyzerListener rightArmAnalyzer = new ArmAnalyzerListener(5, JointType.ElbowRight, 6, 10, false, rightArmIps, true, 
+            //    UIControlsSkeleton);
+            //skeletonClient.subscribe(rightArmAnalyzer);
 
             Thread skeletonThread = new Thread(new ThreadStart(skeletonClient.runLoop));
-            Thread voiceThread = new Thread(new ThreadStart(voiceClient.runLoop));
             skeletonThread.Start();
+            Thread voiceThread = new Thread(new ThreadStart(voiceClient.runLoop));
             voiceThread.Start();
-
-
         }
 
         private void addWinFormsControlsSkeleton(Dictionary<int, System.Windows.Controls.TextBox> UIControls)
@@ -145,8 +142,11 @@ namespace WpfInterface
             {
                 loadedMovement = new SkeletonRecording("loadedMovement");
                 loadedMovement.loadFromFile(dlg.FileName);
-                skeletonClient.subscribe(new RecordingReproducer(skeletonCanvas, loadedMovement,
-                    loadedMovement.getTag(), Colors.Black, skeletonClient));
+                skeletonClient.subscribe(new RecordingReproducer(skeletonCanvas, loadedMovement, loadedMovement.getTag(),
+                    Colors.Black, skeletonClient));
+
+                // Loading movement to analyzer
+                skeletonClient.subscribe(new MovementAnalyzer(loadedMovement, "movementAnalyzerStream"));
             }
         }
 

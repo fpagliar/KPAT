@@ -24,6 +24,12 @@ namespace WpfInterface
             recorder = new SkeletonRecording(recordingTag);
         }
 
+        public void startFixedRecording(int length)
+        {
+            recording = true;
+            recorder = new SkeletonRecording(recordingTag, length);
+        }
+
         public void stopRecording()
         {
             recording = false;

@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
-
+using System.IO;
 namespace WpfInterface
 {
     class TcpClient
@@ -26,8 +26,12 @@ namespace WpfInterface
 
         public void unsubscribe(ClientListener listener)
         {
-            ClientListener l = listener;
-            listeners.TryTake(out l);
+            // Improvised, Trytake was failing...
+            ConcurrentBag<ClientListener> newBag = new ConcurrentBag<ClientListener>();
+            foreach (ClientListener l in listeners)
+                if (l != listener)
+                    newBag.Add(l);
+            listeners = newBag;
         }
 
         public bool hasData()
@@ -43,8 +47,9 @@ namespace WpfInterface
             if (serverStream.DataAvailable)
             {
                 BinaryFormatter serializer = new BinaryFormatter();
-                foreach(ClientListener listener in listeners)
-                    listener.dataArrived(serializer.Deserialize(serverStream));
+                object data = serializer.Deserialize(serverStream);
+                foreach (ClientListener listener in listeners)
+                    listener.dataArrived(data);
             }            
         }
 
@@ -58,8 +63,9 @@ namespace WpfInterface
                 if (serverStream.DataAvailable)
                 {
                     BinaryFormatter serializer = new BinaryFormatter();
+                    object data = serializer.Deserialize(serverStream);
                     foreach (ClientListener listener in listeners)
-                        listener.dataArrived(serializer.Deserialize(serverStream));
+                        listener.dataArrived(data);
                 }
             }            
         }

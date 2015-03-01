@@ -9,11 +9,10 @@ namespace WpfInterface
     {
         private NetworkStream serverStream;
         private static int VOL_STEP = 10;
-        private static int port = 9999;
         // To run the vlc's, from console:
         // $>..../vlc.exe -I qt --rc-host localhost:9999
 
-        public VlcController(string ip)
+        public VlcController(string ip, int port = 9999)
         {
             System.Net.Sockets.TcpClient clientSocket = new System.Net.Sockets.TcpClient();
             clientSocket.Connect(ip, port);

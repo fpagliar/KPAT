@@ -45,7 +45,7 @@ namespace KinectServer
                     BinaryFormatter serializer = new BinaryFormatter();
                     serializer.Serialize(stream, data);
                     stream.Flush();
-                }
+                }   
                 catch (IOException)
                 {
                     // IOException can happen for multiple reasons, but basically, that channel
@@ -53,12 +53,24 @@ namespace KinectServer
                     // just get a new one.
                     fuckedStreams.Add(stream);
                 }
+                catch (ArgumentException)
+                {
+                    // Argument exception means serializer didn't like the stream 
+                    fuckedStreams.Add(stream);
+                }
             }
 
             foreach (NetworkStream stream in fuckedStreams)
             {
                 NetworkStream temp = stream;
-                temp.Dispose();
+                try
+                {
+                    temp.Dispose();
+                    temp.Close();
+                }
+                catch (Exception) { }
+
+                Debug.WriteLine("kicked client!");
                 listenerStreams.TryTake(out temp);
             }            
         }

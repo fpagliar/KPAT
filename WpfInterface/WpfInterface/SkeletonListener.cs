@@ -40,29 +40,6 @@ namespace WpfInterface
             }
 
             SkeletonUtils.redraw(skeletonCanvas, defaultSkeleton, drawingTag, drawingColor);
-
-            //if (replaying)
-            //{
-            //    //DrawingUtils.deleteElements(skeletonCanvas, replayingTag);
-            //    //SkeletonUtils.DrawSkeleton(skeletonCanvas, replayer.next(), Colors.Blue, replayingTag);
-            //    Application.Current.Dispatcher.BeginInvoke(new ThreadStart(() => DrawingUtils.deleteElements(skeletonCanvas, replayingTag)));
-            //    Application.Current.Dispatcher.BeginInvoke(new ThreadStart(() => SkeletonUtils.DrawSkeleton(skeletonCanvas, replayer.next(), Colors.Blue, replayingTag)));
-            //    stream.add(defaultSkeleton);
-            //    if (stream.size() == replayer.size())
-            //    {
-            //        float diff = SkeletonUtils.difference(stream, replayer);
-            //        if (diff < 170)
-            //        {
-            //            leftArmAnalyzer.fullVolume();
-            //            rightArmAnalyzer.fullVolume();
-            //        }
-            //        if (bestReproductionDiff > diff)
-            //        {
-            //            bestReproductionDiff = diff;
-            //        }
-            //    }
-            //}
-
         }
     }
 }

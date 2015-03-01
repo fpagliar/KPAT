@@ -65,6 +65,7 @@
     <Compile Include="ClientListener.cs" />
     <Compile Include="CurrentRecording.cs" />
     <Compile Include="DrawingUtils.cs" />
+    <Compile Include="MovementAnalyzer.cs" />
     <Compile Include="PositionAnalyzer.cs" />
     <Compile Include="RecordingReproducer.cs" />
     <Compile Include="SkeletonListener.cs" />
