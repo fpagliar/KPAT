@@ -11,10 +11,10 @@ namespace WpfInterface
     {
         private PositionAnalyzer analyzer;
 
-        public ArmAnalyzerListener(int mediaSize, JointType joint, int buckets, float delta, bool bucketSpacing, List<VlcController> vlcControllers,
-            bool right, Dictionary<int, System.Windows.Controls.TextBox> UIControls)
+        public ArmAnalyzerListener(int mediaSize, JointType joint, float delta, List<VlcController> vlcControllers, bool right, 
+            Dictionary<int, System.Windows.Controls.TextBox> UIControls)
         {
-            analyzer = new PositionAnalyzer(mediaSize, joint, buckets, delta, bucketSpacing, vlcControllers, right, UIControls);
+            analyzer = new PositionAnalyzer(mediaSize, joint, delta, vlcControllers, right, UIControls);
         }
 
 
@@ -27,6 +27,16 @@ namespace WpfInterface
             }
             analyzer.checkPosition(skeleton);
 
+        }
+
+        public void setMediaSize(int value)
+        {
+            analyzer.setMediaSize(value);
+        }
+
+        public void setOffset(int value)
+        {
+            analyzer.setOffset(value);
         }
 
     }

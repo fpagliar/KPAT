@@ -31,9 +31,7 @@
             <MenuItem Header="_About" Click="mnuAbout" />
         </Menu>
         </DockPanel>    
-        <Canvas x:Name="skeletonCanvas" HorizontalAlignment="Center" Height="300" VerticalAlignment="Center" Width="500" Grid.ColumnSpan="2" Margin="-154,-108,154,108">
-            <Slider x:Name="sliderAngle" MouseUp="Slider_MouseUp" Canvas.Left="804" Canvas.Top="529" Height="33" Width="150" ValueChanged="Slider_ValueChanged_2" Maximum="26" Value="5" SmallChange="1"/>
-        </Canvas>
+        <Canvas x:Name="skeletonCanvas" HorizontalAlignment="Center" Height="300" VerticalAlignment="Center" Width="500" Grid.ColumnSpan="2" Margin="-154,-108,154,108"/>
         <TextBox x:Name="speechRecognized" HorizontalAlignment="Left" Height="46" Margin="474,-56,-248,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="120" Grid.Column="1"/>
         <TextBox x:Name="speechHypothezised" HorizontalAlignment="Left" Height="37" Margin="474,45,-248,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="120" Grid.Column="1"/>
         <TextBox x:Name="speechDetected" HorizontalAlignment="Left" Height="36" Margin="474,135,-248,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="120" Grid.Column="1"/>
@@ -50,7 +48,6 @@
         <TextBox x:Name="upperLeft" HorizontalAlignment="Left" Height="46" Margin="-86,-59,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
         <TextBox x:Name="middleLeft" HorizontalAlignment="Left" Height="46" Margin="-86,160,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
         <TextBox x:Name="lowerLeft" HorizontalAlignment="Left" Height="46" Margin="-86,347,0,-93" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
-        <TextBox Grid.Column="1" HorizontalAlignment="Left" Height="23" Margin="445,403,-267,-126" TextWrapping="Wrap" Text="Camera elevation angle" VerticalAlignment="Top" Width="168"/>
         <TextBox HorizontalAlignment="Left" Height="77" Margin="80,-184,0,0" TextWrapping="Wrap" Text="Kinect Client" VerticalAlignment="Top" Width="344" FontSize="55" Grid.ColumnSpan="2" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" FontWeight="Bold"/>
     </Grid>
 </Window>

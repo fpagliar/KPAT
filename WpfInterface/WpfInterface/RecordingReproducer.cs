@@ -47,8 +47,7 @@ namespace WpfInterface
                 if (client != null)
                 {
                     client.unsubscribe(this);
-                    Application.Current.Dispatcher.BeginInvoke(new ThreadStart(() =>
-                        DrawingUtils.deleteElements(skeletonCanvas, tag)));
+                    Application.Current.Dispatcher.BeginInvoke(new ThreadStart(() => DrawingUtils.deleteElements(skeletonCanvas, tag)));
                     return;
                 }
                 else

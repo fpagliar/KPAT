@@ -15,7 +15,7 @@ using System.Windows.Documents;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Runtime.InteropServices;
-//using KinectUtils;
+using System.Timers;
 
 namespace KinectServer
 {
@@ -30,6 +30,8 @@ namespace KinectServer
         private static TcpServer skeletonServer = new TcpServer(8081);
         private static TcpServer cameraServer = new TcpServer(8082);
         private static TcpServer voiceServer = new TcpServer(8083);
+
+        private readonly object movementLock = new object();
 
         public MainWindow()
         {
@@ -53,7 +55,7 @@ namespace KinectServer
                 phrases.Add("START"); //TODO: properties file
 
                 sensor.Start();
-                sensor.ElevationAngle = 7;
+                sensor.ElevationAngle = 0;
 
                 voiceController.StartRecognition(sensor, phrases);
             }
@@ -80,7 +82,6 @@ namespace KinectServer
                     int _height = (int)source.Height;
                     byte[] _pixels = new byte[_width * _height * WindowUtils.BYTES_PER_PIXEL];
                     frame.CopyPixelDataTo(_pixels);
-                    //object[] data = new object[] { _width, _height, _pixels };
                     List<Object> data = new List<object>();
                     data.Add(_width);
                     data.Add(_height);
@@ -114,6 +115,36 @@ namespace KinectServer
             {
                 voiceController.StopRecognition();
             }
+        }
+
+        private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            lock (movementLock)
+            {
+                if (!cameraAngleSlider.IsEnabled)
+                {
+                    return;
+                }
+                if (sensor != null)
+                {
+                    cameraAngleSlider.IsEnabled = false;
+                    try
+                    {
+                        sensor.ElevationAngle = (int)e.NewValue;
+                    }
+                    catch (Exception) { } // It may fail, fuck it.
+
+                    System.Timers.Timer myTimer = new System.Timers.Timer();
+                    myTimer.Elapsed += new ElapsedEventHandler(ReenableSlider);
+                    myTimer.Interval = 2000; // 2s
+                    myTimer.Start();
+                }
+            }
+        }
+
+        private void ReenableSlider(object source, ElapsedEventArgs e)
+        {
+            Application.Current.Dispatcher.BeginInvoke(new ThreadStart(() => cameraAngleSlider.IsEnabled = true));
         }
 
     }

@@ -17,7 +17,7 @@
                 </TransformGroup>
             </Image.RenderTransform>
         </Image>
-        <Slider HorizontalAlignment="Center" Margin="169,116,2,0" Width="175" RenderTransformOrigin="0.411,1.541" Height="17" VerticalAlignment="Top" Background="Black" Grid.Column="1" Foreground="#FF343434" SmallChange="1" Minimum="-5" ValueChanged="Slider_ValueChanged" TickFrequency="1" IsDirectionReversed="True" IsSnapToTickEnabled="True" Maximum="5" BorderBrush="{x:Null}">
+        <Slider x:Name="cameraAngleSlider" HorizontalAlignment="Center" Margin="169,116,2,0" Width="175" RenderTransformOrigin="0.411,1.541" Height="17" VerticalAlignment="Top" Background="Black" Grid.Column="1" Foreground="#FF343434" SmallChange="5" Minimum="-25" ValueChanged="Slider_ValueChanged" IsDirectionReversed="True" IsSnapToTickEnabled="True" Maximum="25" BorderBrush="{x:Null}" LargeChange="5" TickFrequency="5">
             <Slider.RenderTransform>
                 <TransformGroup>
                     <ScaleTransform/>

@@ -8,14 +8,16 @@ namespace WpfInterface
 {
     class PositionAnalyzer
     {
+        public static int MAX_MEDIA = 100;
 
         private int secsDelay = 1;
 
-        private float[] sumZ;
+        private float[] sumZ = new float[MAX_MEDIA];
         private DateTime[] lastUses = new DateTime[6];
         private bool[] volumeBucketStatus = new bool[6];
         private List<VlcController> vlcControllers;
         private int mediaSize;
+
 
         private float bucket1 = 20;
         private float bucket2 = 80;
@@ -24,21 +26,16 @@ namespace WpfInterface
 
         private int cant = 0;
         private JointType joint;
-        private int buckets;
         private float delta;
-        private bool bucketSpacing;
         private DateTime lastUpdate = DateTime.Now;
         private bool right;
         private Dictionary<int, System.Windows.Controls.TextBox> UIControls;
 
-        public PositionAnalyzer(int mediaSize, JointType joint, int buckets, float delta, bool bucketSpacing, List<VlcController> vlcControllers, bool right, Dictionary<int, System.Windows.Controls.TextBox> UIControls)
+        public PositionAnalyzer(int mediaSize, JointType joint, float delta, List<VlcController> vlcControllers, bool right, Dictionary<int, System.Windows.Controls.TextBox> UIControls)
         {
-            sumZ = new float[mediaSize];
             this.mediaSize = mediaSize;
             this.joint = joint;
-            this.buckets = buckets;
             this.delta = delta;
-            this.bucketSpacing = bucketSpacing;
             this.vlcControllers = vlcControllers;
             this.UIControls = UIControls;
             for (int i = 0; i < 6; i++)
@@ -47,6 +44,18 @@ namespace WpfInterface
                 volumeBucketStatus[i] = true;
             }
             this.right = right;
+        }
+
+        public void setMediaSize(int value)
+        {
+            if(value > 0 && value < MAX_MEDIA)
+                this.mediaSize = value;
+        }
+
+        public void setOffset(int offset)
+        {
+            if(offset > 0)
+                this.offset = offset;
         }
 
         private void stop()

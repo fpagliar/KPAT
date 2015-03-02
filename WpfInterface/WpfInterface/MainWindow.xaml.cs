@@ -76,9 +76,9 @@ namespace WpfInterface
 
             addTrackingJoints();
 
-            ArmAnalyzerListener rightArmAnalyzer = new ArmAnalyzerListener(5, JointType.ElbowRight, 6, 10, false, RightVLCControllers, true,
+            ArmAnalyzerListener rightArmAnalyzer = new ArmAnalyzerListener(5, JointType.ElbowRight, 10, RightVLCControllers, true,
                 UIControlsSkeleton);
-            ArmAnalyzerListener leftArmAnalyzer = new ArmAnalyzerListener(5, JointType.ElbowRight, 6, 10, false, LeftVLCControllers, true,
+            ArmAnalyzerListener leftArmAnalyzer = new ArmAnalyzerListener(5, JointType.ElbowRight, 10, LeftVLCControllers, true,
                 UIControlsSkeleton);
 
             //skeletonClient.subscribe(rightArmAnalyzer);
@@ -165,7 +165,8 @@ namespace WpfInterface
                     Colors.Black, skeletonClient));
 
                 // Loading movement to analyzer
-                skeletonClient.subscribe(new MovementAnalyzer(loadedMovement, "movementAnalyzerStream", new SlowerAction(allVLCControllers)));
+                skeletonClient.subscribe(new MovementAnalyzer(loadedMovement, "movementAnalyzerStream", 
+                    new SlowerAction(allVLCControllers)));
             }
         }
 
@@ -176,56 +177,6 @@ namespace WpfInterface
         }
 
         #endregion
-
-
-        private void Slider_MouseUp(object sender, System.EventArgs e)
-        {
-            Debug.WriteLine("asd");
-        }
-
-        private void Slider_MouseDown(object sender, MouseEventArgs e)
-        {
-            Debug.WriteLine("abf");
-        }
-
-        private void Slider_ValueChanged_2(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-
-            //timer.Interval = 1000;
-
-            //// ... Get Slider reference.
-            //var slider = sender as Slider;
-
-            //// ... Get Value.
-            //double value = slider.Value;
-
-            //if (sensor != null)
-            //{
-            //    timer.Start();
-            //    timer.Tick += timer_Tick;
-
-            //    // ... Set Window Title.
-            //    this.Title = "Value: " + value.ToString("0.0") + "/" + slider.Maximum;
-            //    try
-            //    {
-            //        sensor.ElevationAngle = Convert.ToInt32(value);
-            //    }
-            //    catch (Exception)
-            //    {
-            //    }
-            //    finally {
-            //        sliderAngle.IsEnabled = false;
-            //    }
-
-            //}
-
-        }
-
-        void timer_Tick(object sender, System.EventArgs e)
-        {
-            sliderAngle.IsEnabled = true;
-            timer.Stop();
-        }
 
         private void CompareButton_Click(object sender, RoutedEventArgs e)
         {
@@ -254,7 +205,7 @@ namespace WpfInterface
             if (IPs.Length != 6) {
                 System.Windows.MessageBox.Show("Error - You Have to Provide 6 Valid IPs", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;         
-            }
+            }   
             foreach (String i in IPs)
             {
                 Match match = Regex.Match(IP, @"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}");
@@ -268,6 +219,7 @@ namespace WpfInterface
                 //DO Something here with the 6 Valid IPs
             }
         }
+
         private void mnuBucketoffset(object sender, RoutedEventArgs e)
         {
             String resp = Microsoft.VisualBasic.Interaction.InputBox("Enter the Bucket Offset", "KPAT", this.bucketOffset.ToString());
@@ -282,6 +234,7 @@ namespace WpfInterface
                 System.Windows.MessageBox.Show("Error - You Have Provided an Invalid Value", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
         private void mnuGestureprecision(object sender, RoutedEventArgs e)
         {
             String resp = Microsoft.VisualBasic.Interaction.InputBox("Enter the Gesture Precision", "KPAT", this.gesturePrecision.ToString());
@@ -295,6 +248,7 @@ namespace WpfInterface
                 System.Windows.MessageBox.Show("Error - You Have Provided an Invalid Value", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
         private void mnuExit(object sender, RoutedEventArgs e)
         {
             Environment.Exit(0);
