@@ -4,38 +4,41 @@ using System.Threading;
 using System.Windows.Media;
 using System.Collections.Generic;
 using System.Windows;
+using System.Diagnostics;
+
 namespace WpfInterface
 {
     class PositionAnalyzer
     {
-        public static int MAX_MEDIA = 100;
+        public const int MAX_MEDIA = 100;
+        public const int DEFAULT_MEDIA = 10;
+        public const int DEFAULT_OFFSET = 7;
+
+        private const float bucket1 = 20;
+        private const float bucket2 = 80;
+        private const float bucket3 = 130;
 
         private int secsDelay = 1;
+        private float offset;
 
         private float[] sumZ = new float[MAX_MEDIA];
         private DateTime[] lastUses = new DateTime[6];
         private bool[] volumeBucketStatus = new bool[6];
-        private List<VlcController> vlcControllers;
+        private IReadOnlyList<VlcController> vlcControllers;
         private int mediaSize;
-
-
-        private float bucket1 = 20;
-        private float bucket2 = 80;
-        private float bucket3 = 130;
-        private float offset = 7;
 
         private int cant = 0;
         private JointType joint;
-        private float delta;
         private DateTime lastUpdate = DateTime.Now;
         private bool right;
         private Dictionary<int, System.Windows.Controls.TextBox> UIControls;
 
-        public PositionAnalyzer(int mediaSize, JointType joint, float delta, List<VlcController> vlcControllers, bool right, Dictionary<int, System.Windows.Controls.TextBox> UIControls)
+        public PositionAnalyzer(int mediaSize, JointType joint, float offset, IReadOnlyList<VlcController> vlcControllers, bool right, 
+            Dictionary<int, System.Windows.Controls.TextBox> UIControls)
         {
             this.mediaSize = mediaSize;
             this.joint = joint;
-            this.delta = delta;
+            this.offset = offset;
             this.vlcControllers = vlcControllers;
             this.UIControls = UIControls;
             for (int i = 0; i < 6; i++)
@@ -125,18 +128,17 @@ namespace WpfInterface
             }
 
             float mediaZ = 0;
-            for (int i = 0; i < sumZ.Length; i++)
+            for (int i = 0; i < mediaSize; i++)
             {
                 mediaZ += sumZ[i];
             }
-            mediaZ /= sumZ.Length;
+            mediaZ /= mediaSize;
             int plusIndex = 0;
             if (!right)
             {
                 plusIndex = 3;
                 mediaZ = (-mediaZ);
             }
-            //Debug.WriteLine(mediaZ);
             System.Windows.Controls.TextBox t = null;
 
             if (mediaZ > (bucket1 - offset) && mediaZ < (bucket1 + offset))
@@ -147,11 +149,11 @@ namespace WpfInterface
                     if (volumeBucketStatus[0 + plusIndex])
                     {
 
-                        thread = new Thread(vlcControllers[0].noVolume);
+                        thread = new Thread(vlcControllers[(int)MainWindow.BucketPosition.LEFT_DOWN + plusIndex].noVolume);
                     }
                     else
                     {
-                        thread = new Thread(vlcControllers[0].fullVolume);
+                        thread = new Thread(vlcControllers[(int)MainWindow.BucketPosition.LEFT_DOWN + plusIndex].fullVolume);
                     }
                     thread.Start();
                     if (right)
@@ -176,11 +178,11 @@ namespace WpfInterface
                     Thread thread;
                     if (volumeBucketStatus[1 + plusIndex])
                     {
-                        thread = new Thread(vlcControllers[1].noVolume);
+                        thread = new Thread(vlcControllers[(int)MainWindow.BucketPosition.LEFT_CENTER + plusIndex].noVolume);
                     }
                     else
                     {
-                        thread = new Thread(vlcControllers[1].fullVolume);
+                        thread = new Thread(vlcControllers[(int)MainWindow.BucketPosition.LEFT_CENTER + plusIndex].fullVolume);
                     }
                     thread.Start();
                     if (right)
@@ -205,11 +207,11 @@ namespace WpfInterface
                     Thread thread;
                     if (volumeBucketStatus[2 + plusIndex])
                     {
-                        thread = new Thread(vlcControllers[2].noVolume);
+                        thread = new Thread(vlcControllers[(int)MainWindow.BucketPosition.LEFT_UP + plusIndex].noVolume);
                     }
                     else
                     {
-                        thread = new Thread(vlcControllers[2].fullVolume);
+                        thread = new Thread(vlcControllers[(int)MainWindow.BucketPosition.LEFT_UP + plusIndex].fullVolume);
                     }
                     thread.Start();
                     if (right)

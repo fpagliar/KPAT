@@ -8,9 +8,9 @@ namespace WpfInterface
 {
     class SlowerAction : Action
     {
-        private List<VlcController> controllers;
+        private IReadOnlyList<VlcController> controllers;
 
-        public SlowerAction(List<VlcController> controllers)
+        public SlowerAction(IReadOnlyList<VlcController> controllers)
         {
             this.controllers = controllers;
         }

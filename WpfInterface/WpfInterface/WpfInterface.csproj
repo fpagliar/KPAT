@@ -60,25 +60,25 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Action.cs" />
-    <Compile Include="ArmAnalyzerListener.cs" />
-    <Compile Include="CameraListener.cs" />
-    <Compile Include="ClientListener.cs" />
-    <Compile Include="CurrentRecording.cs" />
-    <Compile Include="DrawingUtils.cs" />
-    <Compile Include="FasterAction.cs" />
-    <Compile Include="MovementAnalyzer.cs" />
-    <Compile Include="PositionAnalyzer.cs" />
-    <Compile Include="RecordingReproducer.cs" />
-    <Compile Include="SkeletonListener.cs" />
-    <Compile Include="SkeletonRecording.cs" />
-    <Compile Include="SkeletonUtils.cs" />
-    <Compile Include="SlowerAction.cs" />
-    <Compile Include="TcpClient.cs" />
-    <Compile Include="VlcController.cs" />
-    <Compile Include="VoiceController.cs" />
-    <Compile Include="VoiceListener.cs" />
-    <Compile Include="WindowUtils.cs" />
+    <Compile Include="ListenerActions\Action.cs" />
+    <Compile Include="Position\ArmAnalyzerListener.cs" />
+    <Compile Include="ListenerActions\CameraListener.cs" />
+    <Compile Include="ListenerActions\ClientListener.cs" />
+    <Compile Include="ListenerActions\CurrentRecording.cs" />
+    <Compile Include="Skeleton\DrawingUtils.cs" />
+    <Compile Include="ListenerActions\FasterAction.cs" />
+    <Compile Include="Movement\MovementAnalyzer.cs" />
+    <Compile Include="Position\PositionAnalyzer.cs" />
+    <Compile Include="Skeleton\RecordingReproducer.cs" />
+    <Compile Include="ListenerActions\SkeletonListener.cs" />
+    <Compile Include="Skeleton\SkeletonRecording.cs" />
+    <Compile Include="Skeleton\SkeletonUtils.cs" />
+    <Compile Include="ListenerActions\SlowerAction.cs" />
+    <Compile Include="Communication\TcpClient.cs" />
+    <Compile Include="Communication\VlcController.cs" />
+    <Compile Include="Communication\VoiceController.cs" />
+    <Compile Include="ListenerActions\VoiceListener.cs" />
+    <Compile Include="Skeleton\WindowUtils.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -119,6 +119,7 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

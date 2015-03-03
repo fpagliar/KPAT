@@ -9,9 +9,12 @@ namespace WpfInterface
 {
     class MovementAnalyzer : ClientListener
     {
+        public const int DEFAULT_THRESHOLD = 170;
+
+
         private SkeletonRecording movement;
         private SkeletonRecording stream;
-        private int threshold = 170;
+        private int threshold = DEFAULT_THRESHOLD;
         private Action action;
 
         public MovementAnalyzer(SkeletonRecording movement, string tag, Action action)
@@ -19,6 +22,12 @@ namespace WpfInterface
             stream = new SkeletonRecording(tag, movement.size());
             this.movement = movement;
             this.action = action;
+        }
+
+        public void setThreshold(int value)
+        {
+            if (value > 0)
+                this.threshold = value;
         }
 
         public void dataArrived(object data)

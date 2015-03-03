@@ -6,18 +6,13 @@ namespace WpfInterface
     class VoiceListener : ClientListener
     {
         private Dictionary<int, System.Windows.Controls.TextBox> UIControls;
-        private List<VlcController> vlcControllers;
+        private IReadOnlyList<VlcController> vlcControllers;
 
 
-        public VoiceListener(Dictionary<int, System.Windows.Controls.TextBox> UIControls , List<VlcController> vlcControllers1, List<VlcController> vlcControllers2) 
+        public VoiceListener(Dictionary<int, System.Windows.Controls.TextBox> UIControls , IReadOnlyList<VlcController> vlcControllers1) 
         {
             this.UIControls = UIControls;
             this.vlcControllers = vlcControllers1;
-            foreach (VlcController item in vlcControllers2)
-            {
-                this.vlcControllers.Add(item);   
-            }
-
         }
 
         public void dataArrived(object data)

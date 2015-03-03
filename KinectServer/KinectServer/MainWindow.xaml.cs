@@ -55,7 +55,7 @@ namespace KinectServer
                 phrases.Add("START"); //TODO: properties file
 
                 sensor.Start();
-                sensor.ElevationAngle = 0;
+                sensor.ElevationAngle = 10;
 
                 voiceController.StartRecognition(sensor, phrases);
             }

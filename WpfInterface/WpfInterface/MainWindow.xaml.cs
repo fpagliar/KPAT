@@ -25,68 +25,44 @@ namespace WpfInterface
     /// </summary>
     public partial class MainWindow : Window
     {
-        private System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
+        private const String defaultVLCIp = "127.0.0.1";
+        private const string DEFAULT_SERVER_IP = "127.0.0.1";
+
         private static TcpClient skeletonClient;
         private static TcpClient voiceClient;
 
         private static CurrentRecording recordingStream;
         private static SkeletonRecording loadedMovement;
         private static bool recording = false;
-        private String serverIP = "192.168.0.81";
-        private int gesturePrecision = 10;
-        private int bucketOffset = 15;
 
-        List<VlcController> allVLCControllers = new List<VlcController>();
+        VlcController[] allControllers = new VlcController[6];
+
+        public enum BucketPosition
+        {
+            LEFT_UP = 0,
+            LEFT_CENTER = 1,
+            LEFT_DOWN = 2,
+            RIGHT_UP = 3,
+            RIGHT_CENTER = 4,
+            RIGHT_DOWN = 5
+        }
+
+        private ArmAnalyzerListener rightArmAnalyzer;
+        private ArmAnalyzerListener leftArmAnalyzer;
+
+        Dictionary<int, System.Windows.Controls.TextBox> UIControlsSkeleton = new Dictionary<int, System.Windows.Controls.TextBox>();
+        Dictionary<int, System.Windows.Controls.TextBox> UIControlsVoiceControl = new Dictionary<int, System.Windows.Controls.TextBox>();
 
         public MainWindow()
         {
             InitializeComponent();
 
-            Dictionary<int, System.Windows.Controls.TextBox> UIControlsSkeleton = new Dictionary<int, System.Windows.Controls.TextBox>();
-            Dictionary<int, System.Windows.Controls.TextBox> UIControlsVoiceControl = new Dictionary<int, System.Windows.Controls.TextBox>();
+            UIControlsSkeleton = new Dictionary<int, System.Windows.Controls.TextBox>();
+            UIControlsVoiceControl = new Dictionary<int, System.Windows.Controls.TextBox>();
             addWinFormsControlsSkeleton(UIControlsSkeleton);
             addWinFormsControlsVoiceControl(UIControlsVoiceControl);
 
-            string[] leftArmIps = new string[] { "127.0.0.1", "127.0.0.1", "127.0.0.1" };
-            string[] rightArmIps = new string[] { "127.0.0.1", "127.0.0.1", "127.0.0.1" };
-
-            List<VlcController> RightVLCControllers = new List<VlcController>();
-            List<VlcController> LeftVLCControllers = new List<VlcController>();
-            foreach (String ip in leftArmIps)
-            {
-                VlcController tmp = new VlcController(ip);
-                LeftVLCControllers.Add(tmp);
-                allVLCControllers.Add(tmp);
-            }
-            foreach (String ip in rightArmIps)
-            {
-                VlcController tmp = new VlcController(ip);
-                RightVLCControllers.Add(tmp);
-                allVLCControllers.Add(tmp);
-            }
-
-            voiceClient = new TcpClient(serverIP, 8083);
-            voiceClient.subscribe(new VoiceListener(UIControlsVoiceControl, LeftVLCControllers , RightVLCControllers));
-            //cameraClient = new TcpClient(serverIP, 8082, new CameraListener(MainImage));
-
-            skeletonClient = new TcpClient(serverIP, 8081);
-            skeletonClient.subscribe(new SkeletonListener(skeletonCanvas));
-            recordingStream = new CurrentRecording();
-            skeletonClient.subscribe(recordingStream);
-
             addTrackingJoints();
-
-            ArmAnalyzerListener rightArmAnalyzer = new ArmAnalyzerListener(5, JointType.ElbowRight, 10, RightVLCControllers, true,
-                UIControlsSkeleton);
-            ArmAnalyzerListener leftArmAnalyzer = new ArmAnalyzerListener(5, JointType.ElbowRight, 10, LeftVLCControllers, true,
-                UIControlsSkeleton);
-
-            //skeletonClient.subscribe(rightArmAnalyzer);
-
-            Thread skeletonThread = new Thread(new ThreadStart(skeletonClient.runLoop));
-            skeletonThread.Start();
-            Thread voiceThread = new Thread(new ThreadStart(voiceClient.runLoop));
-            voiceThread.Start();
         }
 
         private void addWinFormsControlsSkeleton(Dictionary<int, System.Windows.Controls.TextBox> UIControls)
@@ -113,6 +89,53 @@ namespace WpfInterface
             SkeletonUtils.addJoint(JointType.ElbowRight);
             SkeletonUtils.addJoint(JointType.WristLeft);
             SkeletonUtils.addJoint(JointType.WristRight);
+        }
+
+
+        private void setupServer(string serverIP)
+        {
+            if (voiceClient == null)
+            {
+                setupVoiceClient(serverIP);
+            }
+            else
+            {
+                TcpClient oldClient = voiceClient;
+                setupVoiceClient(serverIP);
+                foreach (ClientListener listener in oldClient.getListerners())
+                    voiceClient.subscribe(listener);
+                oldClient.shutdown();
+            }
+            if (skeletonClient == null)
+            {
+                setupSkeletonClient(serverIP);
+                skeletonClient.subscribe(new SkeletonListener(skeletonCanvas));
+                recordingStream = new CurrentRecording();
+                skeletonClient.subscribe(recordingStream);
+            }
+            else
+            {
+                TcpClient oldClient = skeletonClient;
+                setupSkeletonClient(serverIP);
+                foreach (ClientListener listener in oldClient.getListerners())
+                    skeletonClient.subscribe(listener);
+                oldClient.shutdown();
+            }
+            //cameraClient = new TcpClient(serverIP, 8082, new CameraListener(MainImage));
+        }
+
+        private void setupVoiceClient(string serverIP)
+        {
+            voiceClient = new TcpClient(serverIP, 8083);
+            Thread voiceThread = new Thread(new ThreadStart(voiceClient.runLoop));
+            voiceThread.Start();
+        }
+
+        private void setupSkeletonClient(string serverIP)
+        {
+            skeletonClient = new TcpClient(serverIP, 8081);
+            Thread skeletonThread = new Thread(new ThreadStart(skeletonClient.runLoop));
+            skeletonThread.Start();
         }
 
         #region Button Actions
@@ -166,7 +189,7 @@ namespace WpfInterface
 
                 // Loading movement to analyzer
                 skeletonClient.subscribe(new MovementAnalyzer(loadedMovement, "movementAnalyzerStream", 
-                    new SlowerAction(allVLCControllers)));
+                    new SlowerAction(Array.AsReadOnly<VlcController>(allControllers))));
             }
         }
 
@@ -178,29 +201,25 @@ namespace WpfInterface
 
         #endregion
 
-        private void CompareButton_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-
-
         private void mnuServerip(object sender, RoutedEventArgs e)
         {
-            String IP = Microsoft.VisualBasic.Interaction.InputBox("Enter the Server IP Address", "KPAT",this.serverIP);
+            String IP = Microsoft.VisualBasic.Interaction.InputBox("Enter the Server IP Address", "KPAT", DEFAULT_SERVER_IP);
             Match match = Regex.Match(IP, @"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}");
             if (match.Success)
             {
-                this.serverIP = IP;
-                System.Windows.MessageBox.Show("Succesfully Changed Server IP Address to: " + this.serverIP, "Success", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+                setupServer(IP);
+                System.Windows.MessageBox.Show("Succesfully Changed Server IP Address to: " + IP, "Success", MessageBoxButton.OK, MessageBoxImage.Asterisk);
             }
             else {
                 System.Windows.MessageBox.Show("Error - You Have Provided an Invalid IP", "Error" ,  MessageBoxButton.OK,  MessageBoxImage.Error);
             }
     
         }
+
         private void mnuVLCip(object sender, RoutedEventArgs e)
         {
-            String IP = Microsoft.VisualBasic.Interaction.InputBox("Enter the 6 VLC Ips Separated by ';' Ex: 192.168.0.1;192.168.0.2 ... etc", "KPAT", this.serverIP);
+            String IP = Microsoft.VisualBasic.Interaction.InputBox("Enter the 6 VLC Ips Separated by ';' Ex: 192.168.0.1;192.168.0.2 ... etc", "KPAT",
+                defaultVLCIp + ";" + defaultVLCIp + ";" + defaultVLCIp + ";" + defaultVLCIp + ";" + defaultVLCIp + ";" + defaultVLCIp);
             String[] IPs = IP.Split(';');
             if (IPs.Length != 6) {
                 System.Windows.MessageBox.Show("Error - You Have to Provide 6 Valid IPs", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -214,20 +233,45 @@ namespace WpfInterface
                     return;         
                 }
             }
-            foreach (String i in IPs)
+
+            if (rightArmAnalyzer != null)
             {
-                //DO Something here with the 6 Valid IPs
+                skeletonClient.unsubscribe(rightArmAnalyzer);
             }
+            if (leftArmAnalyzer != null)
+            {
+                skeletonClient.unsubscribe(leftArmAnalyzer);
+            }
+            allControllers[(int)BucketPosition.LEFT_UP] = new VlcController(IPs[(int)BucketPosition.LEFT_UP]);
+            allControllers[(int)BucketPosition.LEFT_CENTER] = new VlcController(IPs[(int)BucketPosition.LEFT_CENTER]);
+            allControllers[(int)BucketPosition.LEFT_DOWN] = new VlcController(IPs[(int)BucketPosition.LEFT_DOWN]);
+
+            allControllers[(int)BucketPosition.RIGHT_UP] = new VlcController(IPs[(int)BucketPosition.RIGHT_UP]);
+            allControllers[(int)BucketPosition.RIGHT_CENTER] = new VlcController(IPs[(int)BucketPosition.RIGHT_CENTER]);
+            allControllers[(int)BucketPosition.RIGHT_DOWN] = new VlcController(IPs[(int)BucketPosition.RIGHT_DOWN]);
+
+            rightArmAnalyzer = new ArmAnalyzerListener(PositionAnalyzer.DEFAULT_MEDIA, JointType.ElbowRight, 
+                PositionAnalyzer.DEFAULT_OFFSET, Array.AsReadOnly<VlcController>(allControllers), true, UIControlsSkeleton, 
+                skeletonCanvas);
+            leftArmAnalyzer = new ArmAnalyzerListener(PositionAnalyzer.DEFAULT_MEDIA, JointType.ElbowLeft, 
+                PositionAnalyzer.DEFAULT_OFFSET, Array.AsReadOnly<VlcController>(allControllers), false, UIControlsSkeleton, 
+                skeletonCanvas);
+
+            skeletonClient.subscribe(rightArmAnalyzer);
+            skeletonClient.subscribe(leftArmAnalyzer);
+            voiceClient.subscribe(new VoiceListener(UIControlsVoiceControl, Array.AsReadOnly<VlcController>(allControllers)));
         }
 
         private void mnuBucketoffset(object sender, RoutedEventArgs e)
         {
-            String resp = Microsoft.VisualBasic.Interaction.InputBox("Enter the Bucket Offset", "KPAT", this.bucketOffset.ToString());
+            String resp = Microsoft.VisualBasic.Interaction.InputBox("Enter the bucket offset between 1 and 45", "KPAT", 
+                PositionAnalyzer.DEFAULT_OFFSET.ToString());
             int n;
             bool isNumeric = int.TryParse(resp, out n);
-            if (isNumeric)
+            if (isNumeric && n > 0 && n < 45)
             {
-                this.bucketOffset = n;
+                rightArmAnalyzer.setOffset(n);
+                leftArmAnalyzer.setOffset(n);
             }
             else
             {
@@ -235,14 +279,32 @@ namespace WpfInterface
             }
         }
 
+        private void mnuBucketMediaSize(object sender, RoutedEventArgs e)
+        {
+            String resp = Microsoft.VisualBasic.Interaction.InputBox("Enter the media size between 1 and 100", "KPAT", PositionAnalyzer.DEFAULT_MEDIA.ToString());
+            int n;
+            bool isNumeric = int.TryParse(resp, out n);
+            if (isNumeric && n > 0 && n < 100)
+            {
+                rightArmAnalyzer.setMediaSize(n);
+                leftArmAnalyzer.setMediaSize(n);
+            }
+            else
+            {
+                System.Windows.MessageBox.Show("Error - You Have Provided an Invalid Value", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+
         private void mnuGestureprecision(object sender, RoutedEventArgs e)
         {
-            String resp = Microsoft.VisualBasic.Interaction.InputBox("Enter the Gesture Precision", "KPAT", this.gesturePrecision.ToString());
+            String resp = Microsoft.VisualBasic.Interaction.InputBox("Enter the Gesture Precision", "KPAT", MovementAnalyzer.DEFAULT_THRESHOLD.ToString());
             int n;
             bool isNumeric = int.TryParse(resp, out n);
             if (isNumeric)
             {
-                this.gesturePrecision = n;
+                //this.gesturePrecision = n;
+                // TODO: set it 
             }
             else {
                 System.Windows.MessageBox.Show("Error - You Have Provided an Invalid Value", "Error", MessageBoxButton.OK, MessageBoxImage.Error);

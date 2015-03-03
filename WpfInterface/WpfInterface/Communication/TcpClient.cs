@@ -11,6 +11,7 @@ namespace WpfInterface
     {
         private ConcurrentBag<ClientListener> listeners = new ConcurrentBag<ClientListener>();
         private NetworkStream serverStream;
+        private bool active = true;
 
         public TcpClient(string ip, int port)
         {
@@ -21,6 +22,8 @@ namespace WpfInterface
 
         public void subscribe(ClientListener listener)
         {
+            if (!active)
+                throw new System.Exception("NOT ACTIVE");
             listeners.Add(listener);
         }
 
@@ -34,8 +37,17 @@ namespace WpfInterface
             listeners = newBag;
         }
 
+        public List<ClientListener> getListerners()
+        {
+            if (!active)
+                throw new System.Exception("NOT ACTIVE");
+            return new List<ClientListener>(listeners);
+        }
+
         public bool hasData()
         {
+            if (!active)
+                throw new System.Exception("NOT ACTIVE");
             return serverStream.DataAvailable;
         }
 
@@ -44,12 +56,13 @@ namespace WpfInterface
         /// </summary>
         public void tryRun()
         {
+            if (!active)
+                throw new System.Exception("NOT ACTIVE");
             if (serverStream.DataAvailable)
             {
                 BinaryFormatter serializer = new BinaryFormatter();
                 object data = serializer.Deserialize(serverStream);
-                foreach (ClientListener listener in listeners)
-                    listener.dataArrived(data);
+                informListeners(data);
             }            
         }
 
@@ -58,16 +71,35 @@ namespace WpfInterface
         /// </summary>
         public void runLoop()
         {
-            while (true)
+            if (!active)
+                throw new System.Exception("NOT ACTIVE");
+            while (active)
             {
                 if (serverStream.DataAvailable)
                 {
                     BinaryFormatter serializer = new BinaryFormatter();
                     object data = serializer.Deserialize(serverStream);
-                    foreach (ClientListener listener in listeners)
-                        listener.dataArrived(data);
+                    informListeners(data);
                 }
-            }            
+            }
+        }
+
+        private void informListeners(object data)
+        {
+            foreach (ClientListener listener in listeners)
+            {
+                try
+                {
+                    listener.dataArrived(data);
+                }
+                catch (System.Exception) { } // Ignore
+            }
+        }
+
+        public void shutdown()
+        {
+            active = false;
+            serverStream.Dispose();
         }
     }
 }
