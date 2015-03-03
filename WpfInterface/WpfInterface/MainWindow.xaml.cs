@@ -27,6 +27,7 @@ namespace WpfInterface
     public partial class MainWindow : Window
     {
         private const String defaultVLCIp = "127.0.0.1";
+        private const String defaultVLCPort = "8080";
         private const string DEFAULT_SERVER_IP = "127.0.0.1";
 
         private static TcpClient skeletonClient;
@@ -40,6 +41,7 @@ namespace WpfInterface
 
         System.Windows.Controls.ProgressBar[] progressBars = new System.Windows.Controls.ProgressBar[6];
         System.Windows.Shapes.Rectangle[] boxes = new System.Windows.Shapes.Rectangle[6];
+        System.Windows.Controls.Button[] enablers = new System.Windows.Controls.Button[6];
 
         public enum BucketPosition
         {
@@ -60,6 +62,7 @@ namespace WpfInterface
 
             setupBoxes();
             setupBars();
+            setupEnablers();
 
             addTrackingJoints();
         }
@@ -89,6 +92,20 @@ namespace WpfInterface
             progressBars[(int)BucketPosition.RIGHT_CENTER] = MiddleRightBar;
             progressBars[(int)BucketPosition.RIGHT_DOWN]   = LowerRightBar;
         }
+
+        private void setupEnablers()
+        {
+            enablers[(int)BucketPosition.LEFT_UP]     = UpperLeftEnabler;
+            enablers[(int)BucketPosition.LEFT_CENTER] = MiddleLeftEnabler;
+            enablers[(int)BucketPosition.LEFT_DOWN]   = LowerLeftEnabler;
+
+            enablers[(int)BucketPosition.RIGHT_UP]     = UpperRightEnabler;
+            enablers[(int)BucketPosition.RIGHT_CENTER] = MiddleRightEnabler;
+            enablers[(int)BucketPosition.RIGHT_DOWN]   = LowerRightEnabler;
+            for (int i = 0; i < enablers.Length; i++)
+                enablers[i].Background = new SolidColorBrush(Colors.Red);
+        }
+
 
         private static void addTrackingJoints()
         {
@@ -131,6 +148,7 @@ namespace WpfInterface
             if (voiceClient == null)
             {
                 setupVoiceClient(serverIP);
+                //voiceClient.subscribe(new VoiceListener(null, Array.AsReadOnly<VlcController>(allControllers)));
             }
             else
             {
@@ -146,6 +164,11 @@ namespace WpfInterface
                 skeletonClient.subscribe(new SkeletonListener(skeletonCanvas));
                 recordingStream = new CurrentRecording();
                 skeletonClient.subscribe(recordingStream);
+
+                rightArmAnalyzer = new ArmAnalyzerListener(PositionAnalyzer.DEFAULT_MEDIA, JointType.ElbowRight, PositionAnalyzer.DEFAULT_OFFSET, true, this);
+                leftArmAnalyzer = new ArmAnalyzerListener(PositionAnalyzer.DEFAULT_MEDIA, JointType.ElbowLeft, PositionAnalyzer.DEFAULT_OFFSET, false, this);
+                skeletonClient.subscribe(rightArmAnalyzer);
+                skeletonClient.subscribe(leftArmAnalyzer);
             }
             else
             {
@@ -253,46 +276,62 @@ namespace WpfInterface
     
         }
 
-        private void mnuVLCip(object sender, RoutedEventArgs e)
+        private void enablerClick(BucketPosition pos)
         {
-            String IP = Microsoft.VisualBasic.Interaction.InputBox("Enter the 6 VLC Ips Separated by ';' Ex: 192.168.0.1;192.168.0.2 ... etc", "KPAT",
-                defaultVLCIp + ";" + defaultVLCIp + ";" + defaultVLCIp + ";" + defaultVLCIp + ";" + defaultVLCIp + ";" + defaultVLCIp);
-            String[] IPs = IP.Split(';');
-            if (IPs.Length != 6) {
-                System.Windows.MessageBox.Show("Error - You Have to Provide 6 Valid IPs", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;         
-            }   
-            foreach (String i in IPs)
+            if (allControllers[(int)pos] == null)
             {
-                Match match = Regex.Match(IP, @"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}");
-                if (!match.Success) {
-                    System.Windows.MessageBox.Show("Error - You Have to Provide 6 Valid IPs", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    return;         
+                if (enable(pos))
+                {
+                    enablers[(int)pos].Background = new SolidColorBrush(Colors.Green);
                 }
             }
-
-            if (rightArmAnalyzer != null)
+            else
             {
-                skeletonClient.unsubscribe(rightArmAnalyzer);
+                allControllers[(int)pos] = null;
+                enablers[(int)pos].Background = new SolidColorBrush(Colors.Red);
             }
-            if (leftArmAnalyzer != null)
+        }
+
+        private bool enable(BucketPosition pos)
+        {
+            String IP = Microsoft.VisualBasic.Interaction.InputBox("Enter the IP and Port Ex: 192.168.0.1:9999", "KPAT", defaultVLCIp + ":" + defaultVLCPort);
+            String[] IPs = IP.Split(':');
+            if (IPs.Length != 2)
             {
-                skeletonClient.unsubscribe(leftArmAnalyzer);
+                System.Windows.MessageBox.Show("Error - Invalid format", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return false;
             }
-            allControllers[(int)BucketPosition.LEFT_UP]     = new VlcController(IPs[(int)BucketPosition.LEFT_UP]);
-            allControllers[(int)BucketPosition.LEFT_CENTER] = new VlcController(IPs[(int)BucketPosition.LEFT_CENTER]);
-            allControllers[(int)BucketPosition.LEFT_DOWN]   = new VlcController(IPs[(int)BucketPosition.LEFT_DOWN]);
 
-            allControllers[(int)BucketPosition.RIGHT_UP]     = new VlcController(IPs[(int)BucketPosition.RIGHT_UP]);
-            allControllers[(int)BucketPosition.RIGHT_CENTER] = new VlcController(IPs[(int)BucketPosition.RIGHT_CENTER]);
-            allControllers[(int)BucketPosition.RIGHT_DOWN]   = new VlcController(IPs[(int)BucketPosition.RIGHT_DOWN]);
+            Match match = Regex.Match(IPs[0], @"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}");
+            if (!match.Success)
+            {
+                System.Windows.MessageBox.Show("Error - Invalid format", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return false;
+            }
+            int port;
+            bool isNumeric = int.TryParse(IPs[1], out port);
+            if (!isNumeric || port <= 0)
+            {
+                System.Windows.MessageBox.Show("Error - Invalid format", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return false;
+            }
 
-            rightArmAnalyzer = new ArmAnalyzerListener(PositionAnalyzer.DEFAULT_MEDIA, JointType.ElbowRight, PositionAnalyzer.DEFAULT_OFFSET, true, this);
-            leftArmAnalyzer = new ArmAnalyzerListener(PositionAnalyzer.DEFAULT_MEDIA, JointType.ElbowLeft, PositionAnalyzer.DEFAULT_OFFSET, false, this);
-
-            skeletonClient.subscribe(rightArmAnalyzer);
-            skeletonClient.subscribe(leftArmAnalyzer);
-            voiceClient.subscribe(new VoiceListener(null, Array.AsReadOnly<VlcController>(allControllers)));
+            // We now have a valid IP and port.
+            try
+            {
+                VlcController newController = new VlcController(IPs[0], port);
+                VlcController oldController = allControllers[(int)pos]; 
+                allControllers[(int)pos] = newController;
+                if(oldController != null)
+                    oldController.shutdown();
+            }
+            catch (Exception)
+            {
+                System.Windows.MessageBox.Show("Error - Could not connect to a vlc instance with the data provided", "Error", MessageBoxButton.OK, 
+                    MessageBoxImage.Error);
+                return false;
+            }
+            return true;
         }
 
         private void mnuBucketoffset(object sender, RoutedEventArgs e)
@@ -352,6 +391,36 @@ namespace WpfInterface
         private void mnuAbout(object sender, RoutedEventArgs e)
         {
             System.Windows.MessageBox.Show("Final Project - KPAT - Ver1.0 ");
+        }
+
+        private void UpperRightEnabler_Click(object sender, RoutedEventArgs e)
+        {
+            enablerClick(BucketPosition.RIGHT_UP);
+        }
+
+        private void MiddleRightEnabler_Click(object sender, RoutedEventArgs e)
+        {
+            enablerClick(BucketPosition.RIGHT_CENTER);
+        }
+
+        private void LowerRightEnabler_Click(object sender, RoutedEventArgs e)
+        {
+            enablerClick(BucketPosition.RIGHT_DOWN);
+        }
+
+        private void LowerLeftEnabler_Click(object sender, RoutedEventArgs e)
+        {
+            enablerClick(BucketPosition.LEFT_DOWN);
+        }
+
+        private void MiddleLeftEnabler_Click(object sender, RoutedEventArgs e)
+        {
+            enablerClick(BucketPosition.LEFT_CENTER);
+        }
+
+        private void UpperLeftEnabler_Click(object sender, RoutedEventArgs e)
+        {
+            enablerClick(BucketPosition.LEFT_UP);
         }
     }
 }

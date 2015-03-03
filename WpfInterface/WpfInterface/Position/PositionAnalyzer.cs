@@ -110,9 +110,12 @@ namespace WpfInterface
                 if (lastUses[0].AddSeconds(secsDelay) < DateTime.Now)
                 {
                     MainWindow.BucketPosition position = (right) ? MainWindow.BucketPosition.RIGHT_DOWN : MainWindow.BucketPosition.LEFT_DOWN; 
-                    new Thread(container.getController(position).toggleVolume).Start();
-                    container.selectBucket(position);
-
+                    VlcController controller = container.getController(position);
+                    if (controller != null)
+                    {
+                        new Thread(container.getController(position).toggleVolume).Start();
+                        container.selectBucket(position);
+                    }
                     lastUses[0] = DateTime.Now;
                 }
                 return Colors.Cyan;
@@ -122,8 +125,12 @@ namespace WpfInterface
                 if (lastUses[1].AddSeconds(secsDelay) < DateTime.Now)
                 {
                     MainWindow.BucketPosition position = (right) ? MainWindow.BucketPosition.RIGHT_CENTER : MainWindow.BucketPosition.LEFT_CENTER;
-                    new Thread(container.getController(position).toggleVolume).Start();
-                    container.selectBucket(position);
+                    VlcController controller = container.getController(position);
+                    if (controller != null)
+                    {
+                        new Thread(container.getController(position).toggleVolume).Start();
+                        container.selectBucket(position);
+                    }
                     lastUses[1] = DateTime.Now;
                 }
                 return Colors.Purple;
@@ -133,8 +140,12 @@ namespace WpfInterface
                 if (lastUses[2].AddSeconds(secsDelay) < DateTime.Now)
                 {
                     MainWindow.BucketPosition position = (right) ? MainWindow.BucketPosition.RIGHT_UP : MainWindow.BucketPosition.LEFT_UP;
-                    new Thread(container.getController(position).toggleVolume).Start();
-                    container.selectBucket(position);
+                    VlcController controller = container.getController(position);
+                    if (controller != null)
+                    {
+                        new Thread(container.getController(position).toggleVolume).Start();
+                        container.selectBucket(position);
+                    }
                     lastUses[2] = DateTime.Now;
                 }
                 return Colors.Red;

@@ -12,7 +12,6 @@
         <Menu IsMainMenu="True" Margin="-272,-188,-272,453" Height="35" Grid.ColumnSpan="3">
             <MenuItem Header="_Configuration" VerticalAlignment="Center" HorizontalAlignment="Center" Height="35">
                 <MenuItem Header="Set Server IP" Click="mnuServerip"/>
-                <MenuItem Header="Set VLC's IP " Click="mnuVLCip"/>
                 <MenuItem Header="Set Bucket Offset" Click="mnuBucketoffset"/>
                 <MenuItem Header="Set Bucket media size" Click="mnuBucketMediaSize"/>
                 <MenuItem Header="Set Gesture Precision" Click="mnuGestureprecision"/>
@@ -93,5 +92,11 @@
             </ProgressBar.RenderTransform>
         </ProgressBar>
         <Rectangle x:Name="LowerLeftBox" Fill="#FFF4F4F5" HorizontalAlignment="Left" Height="75" Margin="-90,315,0,-90" Stroke="Black" VerticalAlignment="Top" Width="75"/>
+        <Button x:Name="UpperRightEnabler" Content="" Grid.Column="2" HorizontalAlignment="Left" Margin="42,-32,0,0" VerticalAlignment="Top" Width="20" Height="20" Click="UpperRightEnabler_Click"/>
+        <Button x:Name="MiddleRightEnabler" Content="" Grid.Column="2" HorizontalAlignment="Left" Margin="42,153,0,0" VerticalAlignment="Top" Width="20" Height="20" Click="MiddleRightEnabler_Click"/>
+        <Button x:Name="LowerRightEnabler" Content="" Grid.Column="2" HorizontalAlignment="Left" Margin="42,348,0,-68" VerticalAlignment="Top" Width="20" Height="20" Click="LowerRightEnabler_Click"/>
+        <Button x:Name="UpperLeftEnabler" Content="" HorizontalAlignment="Left" Margin="-10,-32,0,0" VerticalAlignment="Top" Width="20" Height="20" Click="UpperLeftEnabler_Click"/>
+        <Button x:Name="MiddleLeftEnabler" Content="" HorizontalAlignment="Left" Margin="-10,153,0,0" VerticalAlignment="Top" Width="20" Height="20" Click="MiddleLeftEnabler_Click"/>
+        <Button x:Name="LowerLeftEnabler" Content="" HorizontalAlignment="Left" Margin="-10,348,0,-68" VerticalAlignment="Top" Width="20" Height="20" Click="LowerLeftEnabler_Click"/>
     </Grid>
 </Window>

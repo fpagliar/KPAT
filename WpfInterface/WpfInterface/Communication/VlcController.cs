@@ -13,7 +13,7 @@ namespace WpfInterface
         // $>..../vlc.exe -I qt --rc-host localhost:9999
         private int currentVolLevel;
 
-        public VlcController(string ip, int port = 9999)
+        public VlcController(string ip, int port)
         {
             System.Net.Sockets.TcpClient clientSocket = new System.Net.Sockets.TcpClient();
             clientSocket.Connect(ip, port);
@@ -82,6 +82,13 @@ namespace WpfInterface
         public int getVolume()
         {
             return currentVolLevel;
+        }
+
+        public void shutdown()
+        {
+            if(serverStream != null)
+                serverStream.Dispose();
+            serverStream = null;
         }
 
         private string runCommandAndGetAnswer(string command)
