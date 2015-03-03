@@ -17,6 +17,7 @@ using System.Windows.Controls;
 using System.Windows.Forms;
 using Microsoft.VisualBasic;
 using System.Text.RegularExpressions;
+using System.Timers;
 
 namespace WpfInterface
 {
@@ -35,49 +36,58 @@ namespace WpfInterface
         private static SkeletonRecording loadedMovement;
         private static bool recording = false;
 
-        VlcController[] allControllers = new VlcController[6];
+        private VlcController[] allControllers = new VlcController[6];
+
+        System.Windows.Controls.ProgressBar[] progressBars = new System.Windows.Controls.ProgressBar[6];
+        System.Windows.Shapes.Rectangle[] boxes = new System.Windows.Shapes.Rectangle[6];
 
         public enum BucketPosition
         {
-            LEFT_UP = 0,
-            LEFT_CENTER = 1,
-            LEFT_DOWN = 2,
-            RIGHT_UP = 3,
+            LEFT_UP      = 0,
+            LEFT_CENTER  = 1,
+            LEFT_DOWN    = 2,
+            RIGHT_UP     = 3,
             RIGHT_CENTER = 4,
-            RIGHT_DOWN = 5
+            RIGHT_DOWN   = 5
         }
 
         private ArmAnalyzerListener rightArmAnalyzer;
         private ArmAnalyzerListener leftArmAnalyzer;
 
-        Dictionary<int, System.Windows.Controls.TextBox> UIControlsSkeleton = new Dictionary<int, System.Windows.Controls.TextBox>();
-        Dictionary<int, System.Windows.Controls.TextBox> UIControlsVoiceControl = new Dictionary<int, System.Windows.Controls.TextBox>();
-
         public MainWindow()
         {
             InitializeComponent();
 
-            UIControlsSkeleton = new Dictionary<int, System.Windows.Controls.TextBox>();
-            UIControlsVoiceControl = new Dictionary<int, System.Windows.Controls.TextBox>();
-            addWinFormsControlsSkeleton(UIControlsSkeleton);
-            addWinFormsControlsVoiceControl(UIControlsVoiceControl);
+            setupBoxes();
+            setupBars();
 
             addTrackingJoints();
         }
 
-        private void addWinFormsControlsSkeleton(Dictionary<int, System.Windows.Controls.TextBox> UIControls)
+        private void setupBoxes()
         {
-            UIControls.Add(0, lowerLeft);
-            UIControls.Add(1, lowerRight);
-            UIControls.Add(2, middleLeft);
-            UIControls.Add(3, middleRight);
-            UIControls.Add(4, upperLeft);
-            UIControls.Add(5, upperRight);
+            boxes[(int)BucketPosition.LEFT_UP]     = UpperLeftBox;
+            boxes[(int)BucketPosition.LEFT_CENTER] = MiddleLeftBox;
+            boxes[(int)BucketPosition.LEFT_DOWN]   = LowerLeftBox;
+
+            boxes[(int)BucketPosition.RIGHT_UP]     = UpperRightBox;
+            boxes[(int)BucketPosition.RIGHT_CENTER] = MiddleRightBox;
+            boxes[(int)BucketPosition.RIGHT_DOWN]   = LowerRightBox;
+            for (int i = 0; i < boxes.Length; i++)
+            {
+                boxes[i].Fill = new SolidColorBrush(Colors.Black);
+            }
         }
 
-        private void addWinFormsControlsVoiceControl(Dictionary<int, System.Windows.Controls.TextBox> UIControls)
+        private void setupBars()
         {
-            UIControls.Add(0, speechRecognized);
+            progressBars[(int)BucketPosition.LEFT_UP]     = UpperLeftBar;
+            progressBars[(int)BucketPosition.LEFT_CENTER] = MiddleLeftBar;
+            progressBars[(int)BucketPosition.LEFT_DOWN]   = LowerLeftBar;
+
+            progressBars[(int)BucketPosition.RIGHT_UP]     = UpperRightBar;
+            progressBars[(int)BucketPosition.RIGHT_CENTER] = MiddleRightBar;
+            progressBars[(int)BucketPosition.RIGHT_DOWN]   = LowerRightBar;
         }
 
         private static void addTrackingJoints()
@@ -91,6 +101,29 @@ namespace WpfInterface
             SkeletonUtils.addJoint(JointType.WristRight);
         }
 
+        public Canvas getCanvas()
+        {
+            return skeletonCanvas;
+        }
+
+        public VlcController getController(BucketPosition pos)
+        {
+            return allControllers[(int)pos];
+        }
+
+        public void selectBucket(BucketPosition pos)
+        {
+            System.Windows.Application.Current.Dispatcher.BeginInvoke(new ThreadStart(() => boxes[(int)pos].Fill = new SolidColorBrush(Colors.Cyan)));
+            System.Timers.Timer myTimer = new System.Timers.Timer();
+            myTimer.Elapsed += delegate { UnselectBucket(pos); };
+            myTimer.Interval = 1000; // 1s
+            myTimer.Start();
+        }
+
+        private void UnselectBucket(BucketPosition pos)
+        {
+            System.Windows.Application.Current.Dispatcher.BeginInvoke(new ThreadStart(() => boxes[(int)pos].Fill = new SolidColorBrush(Colors.Black)));
+        }
 
         private void setupServer(string serverIP)
         {
@@ -250,16 +283,12 @@ namespace WpfInterface
             allControllers[(int)BucketPosition.RIGHT_CENTER] = new VlcController(IPs[(int)BucketPosition.RIGHT_CENTER]);
             allControllers[(int)BucketPosition.RIGHT_DOWN] = new VlcController(IPs[(int)BucketPosition.RIGHT_DOWN]);
 
-            rightArmAnalyzer = new ArmAnalyzerListener(PositionAnalyzer.DEFAULT_MEDIA, JointType.ElbowRight, 
-                PositionAnalyzer.DEFAULT_OFFSET, Array.AsReadOnly<VlcController>(allControllers), true, UIControlsSkeleton, 
-                skeletonCanvas);
-            leftArmAnalyzer = new ArmAnalyzerListener(PositionAnalyzer.DEFAULT_MEDIA, JointType.ElbowLeft, 
-                PositionAnalyzer.DEFAULT_OFFSET, Array.AsReadOnly<VlcController>(allControllers), false, UIControlsSkeleton, 
-                skeletonCanvas);
+            rightArmAnalyzer = new ArmAnalyzerListener(PositionAnalyzer.DEFAULT_MEDIA, JointType.ElbowRight, PositionAnalyzer.DEFAULT_OFFSET, true, this);
+            leftArmAnalyzer = new ArmAnalyzerListener(PositionAnalyzer.DEFAULT_MEDIA, JointType.ElbowLeft, PositionAnalyzer.DEFAULT_OFFSET, false, this);
 
             skeletonClient.subscribe(rightArmAnalyzer);
             skeletonClient.subscribe(leftArmAnalyzer);
-            voiceClient.subscribe(new VoiceListener(UIControlsVoiceControl, Array.AsReadOnly<VlcController>(allControllers)));
+            voiceClient.subscribe(new VoiceListener(null, Array.AsReadOnly<VlcController>(allControllers)));
         }
 
         private void mnuBucketoffset(object sender, RoutedEventArgs e)

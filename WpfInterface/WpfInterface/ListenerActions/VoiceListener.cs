@@ -28,8 +28,6 @@ namespace WpfInterface
                 default:
                     break;
             }
-
-
         }
 
         private void toggleStartAction()

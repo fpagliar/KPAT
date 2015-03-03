@@ -4,7 +4,11 @@
         Title="MainWindow" Height="708" Width="1055.3" HorizontalAlignment="Center" VerticalAlignment="Top">
 
     <Grid Width="500" Height="300">
-        <Menu DockPanel.Dock="Top" IsMainMenu="True" Margin="-272,-188,-272,453" Height="35">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="117*"/>
+            <ColumnDefinition Width="50*"/>
+        </Grid.ColumnDefinitions>
+        <Menu IsMainMenu="True" Margin="-272,-188,-272,453" Height="35" Grid.ColumnSpan="2">
             <MenuItem Header="_Configuration" VerticalAlignment="Center" HorizontalAlignment="Center" Height="35">
                 <MenuItem Header="Set Server IP" Click="mnuServerip"/>
                 <MenuItem Header="Set VLC's IP " Click="mnuVLCip"/>
@@ -16,20 +20,78 @@
             </MenuItem>
             <MenuItem Header="_About" Click="mnuAbout" Height="35" />
         </Menu>
-        <Label Content="Kinect Client" RenderTransformOrigin="9.167,0.731" Margin="86,-188,139,409" FontSize="48" VerticalAlignment="Center" HorizontalAlignment="Center" Height="79" Background="#FF8F8F8F" Width="275"/>
-        <Canvas x:Name="skeletonCanvas" HorizontalAlignment="Right" Height="300" VerticalAlignment="Center" Width="500" Margin="-139,0,139,0" RenderTransformOrigin="0.516,1.147"/>
+        <Label Content="Kinect Client" RenderTransformOrigin="9.167,0.731" Margin="134,-188,91,409" FontSize="48" VerticalAlignment="Center" HorizontalAlignment="Center" Height="79" Background="#FF8F8F8F" Width="275" Grid.ColumnSpan="2"/>
+        <Canvas x:Name="skeletonCanvas" HorizontalAlignment="Right" Height="300" VerticalAlignment="Center" Width="500" Margin="-124,-85,124,85" RenderTransformOrigin="0.516,1.147" Grid.ColumnSpan="2"/>
         <Button x:Name="RecordingButton" Content="Start Recording" HorizontalAlignment="Left" Margin="-251,-85,0,0" VerticalAlignment="Top" Width="98" Height="52" Click="RecordingButton_Click"/>
         <Button x:Name="PlayButton" Content="Play" HorizontalAlignment="Left" Margin="-251,-11,0,0" VerticalAlignment="Top" Width="98" Height="52" Click="PlayButton_Click"/>
         <Button x:Name="SaveButton" Content="Save" HorizontalAlignment="Left" Margin="-251,70,0,0" VerticalAlignment="Top" Width="98" Height="52" Click="SaveButton_Click"/>
         <Button x:Name="LoadButton" Content="Load" HorizontalAlignment="Left" Margin="-251,150,0,0" VerticalAlignment="Top" Width="98" Height="52" Click="LoadButton_Click"/>
-        <TextBox x:Name="upperRight" HorizontalAlignment="Left" Height="46" Margin="302,-59,-76,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" Grid.Column="1"/>
-        <TextBox x:Name="middleRight" HorizontalAlignment="Left" Height="46" Margin="302,160,-76,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" Grid.Column="1"/>
-        <TextBox x:Name="lowerRight" HorizontalAlignment="Left" Height="46" Margin="302,347,-76,-93" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" Grid.Column="1"/>
-        <TextBox x:Name="upperLeft" HorizontalAlignment="Left" Height="46" Margin="-86,-59,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
-        <TextBox x:Name="middleLeft" HorizontalAlignment="Left" Height="46" Margin="-86,160,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
-        <TextBox x:Name="lowerLeft" HorizontalAlignment="Left" Height="46" Margin="-86,347,0,-93" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
-        <TextBox x:Name="speechRecognized" HorizontalAlignment="Left" Height="89" Margin="530,92,-150,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
-        <ProgressBar HorizontalAlignment="Left" Height="15" Margin="293,-75,0,0" VerticalAlignment="Top" Width="135" Value="25"/>
-        <Rectangle Fill="#FFF4F4F5" HorizontalAlignment="Left" Height="40" Margin="345,-53,0,0" Stroke="Black" VerticalAlignment="Top" Width="40"/>
+        <ProgressBar x:Name="UpperRightBar" HorizontalAlignment="Left" Height="15" Margin="34.5,-29,0,0" VerticalAlignment="Top" Width="75" Value="25" RenderTransformOrigin="0.5,0.5" Grid.Column="1">
+            <ProgressBar.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform/>
+                    <SkewTransform/>
+                    <RotateTransform Angle="-90"/>
+                    <TranslateTransform/>
+                </TransformGroup>
+            </ProgressBar.RenderTransform>
+        </ProgressBar>
+        <Rectangle Fill="#FFF4F4F5" HorizontalAlignment="Left" Height="75" Margin="329,-60,0,0" Stroke="Black" VerticalAlignment="Top" Width="75" Grid.ColumnSpan="2"/>
+        <Rectangle x:Name="UpperRightBox" Fill="#FFF4F4F5" HorizontalAlignment="Left" Height="75" Margin="329,-60,0,0" Stroke="Black" VerticalAlignment="Top" Width="75" Grid.ColumnSpan="2"/>
+        <ProgressBar x:Name="MiddleRightBar" HorizontalAlignment="Left" Height="15" Margin="34.5,158,0,0" VerticalAlignment="Top" Width="75" Value="25" RenderTransformOrigin="0.5,0.5" Grid.Column="1">
+            <ProgressBar.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform/>
+                    <SkewTransform/>
+                    <RotateTransform Angle="-90"/>
+                    <TranslateTransform/>
+                </TransformGroup>
+            </ProgressBar.RenderTransform>
+        </ProgressBar>
+        <Rectangle x:Name="MiddleRightBox" Fill="#FFF4F4F5" HorizontalAlignment="Left" Height="75" Margin="329,127,0,0" Stroke="Black" VerticalAlignment="Top" Width="75" Grid.ColumnSpan="2"/>
+        <ProgressBar x:Name="LowerRightBar" HorizontalAlignment="Left" Height="15" Margin="34.5,346,0,-61" VerticalAlignment="Top" Width="75" Value="25" RenderTransformOrigin="0.5,0.5" Grid.Column="1">
+            <ProgressBar.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform/>
+                    <SkewTransform/>
+                    <RotateTransform Angle="-90"/>
+                    <TranslateTransform/>
+                </TransformGroup>
+            </ProgressBar.RenderTransform>
+        </ProgressBar>
+        <Rectangle x:Name="LowerRightBox" Fill="#FFF4F4F5" HorizontalAlignment="Left" Height="75" Margin="329,315,0,-90" Stroke="Black" VerticalAlignment="Top" Width="75" Grid.ColumnSpan="2"/>
+        <ProgressBar x:Name="UpperLeftBar" HorizontalAlignment="Left" Height="15" Margin="-34,-29,0,0" VerticalAlignment="Top" Width="75" Value="25" RenderTransformOrigin="0.5,0.5">
+            <ProgressBar.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform/>
+                    <SkewTransform/>
+                    <RotateTransform Angle="-90"/>
+                    <TranslateTransform/>
+                </TransformGroup>
+            </ProgressBar.RenderTransform>
+        </ProgressBar>
+        <Rectangle x:Name="UpperLeftBox" Fill="#FFF4F4F5" HorizontalAlignment="Left" Height="75" Margin="-90,-60,0,0" Stroke="Black" VerticalAlignment="Top" Width="75"/>
+        <ProgressBar x:Name="MiddleLeftBar" HorizontalAlignment="Left" Height="15" Margin="-34,158,0,0" VerticalAlignment="Top" Width="75" Value="25" RenderTransformOrigin="0.5,0.5">
+            <ProgressBar.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform/>
+                    <SkewTransform/>
+                    <RotateTransform Angle="-90"/>
+                    <TranslateTransform/>
+                </TransformGroup>
+            </ProgressBar.RenderTransform>
+        </ProgressBar>
+        <Rectangle x:Name="MiddleLeftBox" Fill="#FFF4F4F5" HorizontalAlignment="Left" Height="75" Margin="-90,127,0,0" Stroke="Black" VerticalAlignment="Top" Width="75"/>
+        <ProgressBar x:Name="LowerLeftBar" HorizontalAlignment="Left" Height="15" Margin="-34,346,0,-61" VerticalAlignment="Top" Width="75" Value="25" RenderTransformOrigin="0.5,0.5">
+            <ProgressBar.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform/>
+                    <SkewTransform/>
+                    <RotateTransform Angle="-90"/>
+                    <TranslateTransform/>
+                </TransformGroup>
+            </ProgressBar.RenderTransform>
+        </ProgressBar>
+        <Rectangle x:Name="LowerLeftBox" Fill="#FFF4F4F5" HorizontalAlignment="Left" Height="75" Margin="-90,315,0,-90" Stroke="Black" VerticalAlignment="Top" Width="75"/>
     </Grid>
 </Window>

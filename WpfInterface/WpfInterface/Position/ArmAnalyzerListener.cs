@@ -16,11 +16,10 @@ namespace WpfInterface
         private PositionAnalyzer analyzer;
         private Canvas skelcanvas;
 
-        public ArmAnalyzerListener(int mediaSize, JointType joint, float delta, IReadOnlyList<VlcController> vlcControllers, 
-            bool right, Dictionary<int, System.Windows.Controls.TextBox> UIControls, Canvas skelcanvas)
+        public ArmAnalyzerListener(int mediaSize, JointType joint, float delta, bool right, MainWindow container)
         {
-            analyzer = new PositionAnalyzer(mediaSize, joint, delta, vlcControllers, right, UIControls);
-            this.skelcanvas = skelcanvas;
+            analyzer = new PositionAnalyzer(mediaSize, joint, delta, right, container);
+            this.skelcanvas = container.getCanvas();
         }
 
 

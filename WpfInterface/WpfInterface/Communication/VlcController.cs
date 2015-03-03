@@ -5,7 +5,7 @@ using System.Text;
 
 namespace WpfInterface
 {
-    class VlcController
+    public class VlcController
     {
         private NetworkStream serverStream;
         private static int VOL_STEP = 10;
