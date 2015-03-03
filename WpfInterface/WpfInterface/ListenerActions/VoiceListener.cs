@@ -5,14 +5,12 @@ namespace WpfInterface
 {
     class VoiceListener : ClientListener
     {
-        private Dictionary<int, System.Windows.Controls.TextBox> UIControls;
-        private IReadOnlyList<VlcController> vlcControllers;
 
+        private MainWindow container;
 
-        public VoiceListener(Dictionary<int, System.Windows.Controls.TextBox> UIControls , IReadOnlyList<VlcController> vlcControllers1) 
+        public VoiceListener(MainWindow container) 
         {
-            this.UIControls = UIControls;
-            this.vlcControllers = vlcControllers1;
+            this.container = container;
         }
 
         public void dataArrived(object data)
@@ -32,20 +30,26 @@ namespace WpfInterface
 
         private void toggleStartAction()
         {
-            for (int i = 0; i < vlcControllers.Count; i++)
+            container.startRecognized();
+            foreach(VlcController controller in container.getControllers())
             {
-                Thread thread = new Thread(vlcControllers[i].togglePlay);
-                thread.Start();
+                if (controller != null)
+                {
+                    new Thread(controller.togglePlay).Start();
+                }
             }
             return;
         }
 
         private void toggleStopAction()
         {
-            for (int i = 0; i < vlcControllers.Count; i++)
+            container.stopRecognized();
+            foreach (VlcController controller in container.getControllers())
             {
-                Thread thread = new Thread(vlcControllers[i].togglePlay);
-                thread.Start();
+                if (controller != null)
+                {
+                    new Thread(controller.togglePlay).Start();
+                }
             }
             return;
         }

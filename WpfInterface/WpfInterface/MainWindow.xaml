@@ -98,5 +98,6 @@
         <Button x:Name="UpperLeftEnabler" Content="" HorizontalAlignment="Left" Margin="-10,-32,0,0" VerticalAlignment="Top" Width="20" Height="20" Click="UpperLeftEnabler_Click"/>
         <Button x:Name="MiddleLeftEnabler" Content="" HorizontalAlignment="Left" Margin="-10,153,0,0" VerticalAlignment="Top" Width="20" Height="20" Click="MiddleLeftEnabler_Click"/>
         <Button x:Name="LowerLeftEnabler" Content="" HorizontalAlignment="Left" Margin="-10,348,0,-68" VerticalAlignment="Top" Width="20" Height="20" Click="LowerLeftEnabler_Click"/>
+        <Ellipse x:Name="voiceControl" Grid.Column="2" Fill="#FFF4F4F5" HorizontalAlignment="Left" Height="50" Margin="270,-133,-236,0" Stroke="Black" VerticalAlignment="Top" Width="50"/>
     </Grid>
 </Window>

@@ -27,7 +27,7 @@ namespace WpfInterface
     public partial class MainWindow : Window
     {
         private const String defaultVLCIp = "127.0.0.1";
-        private const String defaultVLCPort = "8080";
+        private const String defaultVLCPort = "9999";
         private const string DEFAULT_SERVER_IP = "127.0.0.1";
 
         private static TcpClient skeletonClient;
@@ -37,21 +37,28 @@ namespace WpfInterface
         private static SkeletonRecording loadedMovement;
         private static bool recording = false;
 
+        public enum BucketPosition
+        {
+            LEFT_UP = 0,
+            LEFT_CENTER = 1,
+            LEFT_DOWN = 2,
+            RIGHT_UP = 3,
+            RIGHT_CENTER = 4,
+            RIGHT_DOWN = 5
+        }
         private VlcController[] allControllers = new VlcController[6];
 
         System.Windows.Controls.ProgressBar[] progressBars = new System.Windows.Controls.ProgressBar[6];
         System.Windows.Shapes.Rectangle[] boxes = new System.Windows.Shapes.Rectangle[6];
         System.Windows.Controls.Button[] enablers = new System.Windows.Controls.Button[6];
 
-        public enum BucketPosition
+        public enum Movement
         {
-            LEFT_UP      = 0,
-            LEFT_CENTER  = 1,
-            LEFT_DOWN    = 2,
-            RIGHT_UP     = 3,
-            RIGHT_CENTER = 4,
-            RIGHT_DOWN   = 5
+            FASTER = 0,
+            SLOWER = 1,
+            VOLUME_UP = 2
         }
+        MovementAnalyzer[] movements = new MovementAnalyzer[3];
 
         private ArmAnalyzerListener rightArmAnalyzer;
         private ArmAnalyzerListener leftArmAnalyzer;
@@ -66,6 +73,8 @@ namespace WpfInterface
 
             addTrackingJoints();
         }
+
+        #region setup
 
         private void setupBoxes()
         {
@@ -106,7 +115,6 @@ namespace WpfInterface
                 enablers[i].Background = new SolidColorBrush(Colors.Red);
         }
 
-
         private static void addTrackingJoints()
         {
             // Adding the joints I want to track
@@ -116,16 +124,6 @@ namespace WpfInterface
             SkeletonUtils.addJoint(JointType.ElbowRight);
             SkeletonUtils.addJoint(JointType.WristLeft);
             SkeletonUtils.addJoint(JointType.WristRight);
-        }
-
-        public Canvas getCanvas()
-        {
-            return skeletonCanvas;
-        }
-
-        public VlcController getController(BucketPosition pos)
-        {
-            return allControllers[(int)pos];
         }
 
         public void selectBucket(BucketPosition pos)
@@ -148,7 +146,7 @@ namespace WpfInterface
             if (voiceClient == null)
             {
                 setupVoiceClient(serverIP);
-                //voiceClient.subscribe(new VoiceListener(null, Array.AsReadOnly<VlcController>(allControllers)));
+                voiceClient.subscribe(new VoiceListener(this));
             }
             else
             {
@@ -167,8 +165,6 @@ namespace WpfInterface
 
                 rightArmAnalyzer = new ArmAnalyzerListener(PositionAnalyzer.DEFAULT_MEDIA, JointType.ElbowRight, PositionAnalyzer.DEFAULT_OFFSET, true, this);
                 leftArmAnalyzer = new ArmAnalyzerListener(PositionAnalyzer.DEFAULT_MEDIA, JointType.ElbowLeft, PositionAnalyzer.DEFAULT_OFFSET, false, this);
-                skeletonClient.subscribe(rightArmAnalyzer);
-                skeletonClient.subscribe(leftArmAnalyzer);
             }
             else
             {
@@ -193,6 +189,47 @@ namespace WpfInterface
             skeletonClient = new TcpClient(serverIP, 8081);
             Thread skeletonThread = new Thread(new ThreadStart(skeletonClient.runLoop));
             skeletonThread.Start();
+        }
+
+        #endregion
+
+        public Canvas getCanvas()
+        {
+            return skeletonCanvas;
+        }
+
+        public VlcController getController(BucketPosition pos)
+        {
+            return allControllers[(int)pos];
+        }
+
+        public IReadOnlyList<VlcController> getControllers()
+        {
+            return Array.AsReadOnly<VlcController>(allControllers);
+        }
+
+        public void startRecognized()
+        {
+            System.Windows.Application.Current.Dispatcher.BeginInvoke(new ThreadStart(() => voiceControl.Fill = new SolidColorBrush(Colors.Green)));
+            if (skeletonClient != null)
+            {
+                if (leftArmAnalyzer != null)
+                    skeletonClient.subscribe(leftArmAnalyzer);
+                if (rightArmAnalyzer != null)
+                    skeletonClient.subscribe(rightArmAnalyzer);
+            }
+        }
+
+        public void stopRecognized()
+        {
+            System.Windows.Application.Current.Dispatcher.BeginInvoke(new ThreadStart(() => voiceControl.Fill = new SolidColorBrush(Colors.Red)));
+            if (skeletonClient != null)
+            {
+                if (leftArmAnalyzer != null)
+                    skeletonClient.unsubscribe(leftArmAnalyzer);
+                if (rightArmAnalyzer != null)
+                    skeletonClient.unsubscribe(rightArmAnalyzer);
+            }
         }
 
         #region Button Actions
@@ -261,6 +298,8 @@ namespace WpfInterface
 
         #endregion
 
+        #region Menu items
+
         private void mnuServerip(object sender, RoutedEventArgs e)
         {
             String IP = Microsoft.VisualBasic.Interaction.InputBox("Enter the Server IP Address", "KPAT", DEFAULT_SERVER_IP);
@@ -274,6 +313,103 @@ namespace WpfInterface
                 System.Windows.MessageBox.Show("Error - You Have Provided an Invalid IP", "Error" ,  MessageBoxButton.OK,  MessageBoxImage.Error);
             }
     
+        }
+
+        private void mnuBucketoffset(object sender, RoutedEventArgs e)
+        {
+            String resp = Microsoft.VisualBasic.Interaction.InputBox("Enter the bucket offset between 1 and 45", "KPAT", 
+                PositionAnalyzer.DEFAULT_OFFSET.ToString());
+            int n;
+            bool isNumeric = int.TryParse(resp, out n);
+            if (isNumeric && n > 0 && n < 45)
+            {
+                if (rightArmAnalyzer != null)
+                    rightArmAnalyzer.setOffset(n);
+                if(leftArmAnalyzer != null)
+                    leftArmAnalyzer.setOffset(n);
+            }
+            else
+            {
+                System.Windows.MessageBox.Show("Error - You Have Provided an Invalid Value", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void mnuBucketMediaSize(object sender, RoutedEventArgs e)
+        {
+            String resp = Microsoft.VisualBasic.Interaction.InputBox("Enter the media size between 1 and 100", "KPAT", PositionAnalyzer.DEFAULT_MEDIA.ToString());
+            int n;
+            bool isNumeric = int.TryParse(resp, out n);
+            if (isNumeric && n > 0 && n < 100)
+            {
+                if (rightArmAnalyzer != null)
+                    rightArmAnalyzer.setMediaSize(n);
+                if (leftArmAnalyzer != null)
+                    leftArmAnalyzer.setMediaSize(n);
+            }
+            else
+            {
+                System.Windows.MessageBox.Show("Error - You Have Provided an Invalid Value", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+
+        private void mnuGestureprecision(object sender, RoutedEventArgs e)
+        {
+            String resp = Microsoft.VisualBasic.Interaction.InputBox("Enter the Gesture Precision", "KPAT", MovementAnalyzer.DEFAULT_THRESHOLD.ToString());
+            int n;
+            bool isNumeric = int.TryParse(resp, out n);
+            if (isNumeric)
+            {
+                //this.gesturePrecision = n;
+                // TODO: set it 
+            }
+            else {
+                System.Windows.MessageBox.Show("Error - You Have Provided an Invalid Value", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void mnuExit(object sender, RoutedEventArgs e)
+        {
+            Environment.Exit(0);
+        }
+
+        private void mnuAbout(object sender, RoutedEventArgs e)
+        {
+            System.Windows.MessageBox.Show("Final Project - KPAT - Ver1.0 ");
+        }
+
+        #endregion
+
+        #region Enabler Buttons
+
+        private void UpperRightEnabler_Click(object sender, RoutedEventArgs e)
+        {
+            enablerClick(BucketPosition.RIGHT_UP);
+        }
+
+        private void MiddleRightEnabler_Click(object sender, RoutedEventArgs e)
+        {
+            enablerClick(BucketPosition.RIGHT_CENTER);
+        }
+
+        private void LowerRightEnabler_Click(object sender, RoutedEventArgs e)
+        {
+            enablerClick(BucketPosition.RIGHT_DOWN);
+        }
+
+        private void LowerLeftEnabler_Click(object sender, RoutedEventArgs e)
+        {
+            enablerClick(BucketPosition.LEFT_DOWN);
+        }
+
+        private void MiddleLeftEnabler_Click(object sender, RoutedEventArgs e)
+        {
+            enablerClick(BucketPosition.LEFT_CENTER);
+        }
+
+        private void UpperLeftEnabler_Click(object sender, RoutedEventArgs e)
+        {
+            enablerClick(BucketPosition.LEFT_UP);
         }
 
         private void enablerClick(BucketPosition pos)
@@ -320,107 +456,20 @@ namespace WpfInterface
             try
             {
                 VlcController newController = new VlcController(IPs[0], port);
-                VlcController oldController = allControllers[(int)pos]; 
+                VlcController oldController = allControllers[(int)pos];
                 allControllers[(int)pos] = newController;
-                if(oldController != null)
+                if (oldController != null)
                     oldController.shutdown();
             }
             catch (Exception)
             {
-                System.Windows.MessageBox.Show("Error - Could not connect to a vlc instance with the data provided", "Error", MessageBoxButton.OK, 
+                System.Windows.MessageBox.Show("Error - Could not connect to a vlc instance with the data provided", "Error", MessageBoxButton.OK,
                     MessageBoxImage.Error);
                 return false;
             }
             return true;
         }
 
-        private void mnuBucketoffset(object sender, RoutedEventArgs e)
-        {
-            String resp = Microsoft.VisualBasic.Interaction.InputBox("Enter the bucket offset between 1 and 45", "KPAT", 
-                PositionAnalyzer.DEFAULT_OFFSET.ToString());
-            int n;
-            bool isNumeric = int.TryParse(resp, out n);
-            if (isNumeric && n > 0 && n < 45)
-            {
-                rightArmAnalyzer.setOffset(n);
-                leftArmAnalyzer.setOffset(n);
-            }
-            else
-            {
-                System.Windows.MessageBox.Show("Error - You Have Provided an Invalid Value", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private void mnuBucketMediaSize(object sender, RoutedEventArgs e)
-        {
-            String resp = Microsoft.VisualBasic.Interaction.InputBox("Enter the media size between 1 and 100", "KPAT", PositionAnalyzer.DEFAULT_MEDIA.ToString());
-            int n;
-            bool isNumeric = int.TryParse(resp, out n);
-            if (isNumeric && n > 0 && n < 100)
-            {
-                rightArmAnalyzer.setMediaSize(n);
-                leftArmAnalyzer.setMediaSize(n);
-            }
-            else
-            {
-                System.Windows.MessageBox.Show("Error - You Have Provided an Invalid Value", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-
-        private void mnuGestureprecision(object sender, RoutedEventArgs e)
-        {
-            String resp = Microsoft.VisualBasic.Interaction.InputBox("Enter the Gesture Precision", "KPAT", MovementAnalyzer.DEFAULT_THRESHOLD.ToString());
-            int n;
-            bool isNumeric = int.TryParse(resp, out n);
-            if (isNumeric)
-            {
-                //this.gesturePrecision = n;
-                // TODO: set it 
-            }
-            else {
-                System.Windows.MessageBox.Show("Error - You Have Provided an Invalid Value", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private void mnuExit(object sender, RoutedEventArgs e)
-        {
-            Environment.Exit(0);
-        }
-
-        private void mnuAbout(object sender, RoutedEventArgs e)
-        {
-            System.Windows.MessageBox.Show("Final Project - KPAT - Ver1.0 ");
-        }
-
-        private void UpperRightEnabler_Click(object sender, RoutedEventArgs e)
-        {
-            enablerClick(BucketPosition.RIGHT_UP);
-        }
-
-        private void MiddleRightEnabler_Click(object sender, RoutedEventArgs e)
-        {
-            enablerClick(BucketPosition.RIGHT_CENTER);
-        }
-
-        private void LowerRightEnabler_Click(object sender, RoutedEventArgs e)
-        {
-            enablerClick(BucketPosition.RIGHT_DOWN);
-        }
-
-        private void LowerLeftEnabler_Click(object sender, RoutedEventArgs e)
-        {
-            enablerClick(BucketPosition.LEFT_DOWN);
-        }
-
-        private void MiddleLeftEnabler_Click(object sender, RoutedEventArgs e)
-        {
-            enablerClick(BucketPosition.LEFT_CENTER);
-        }
-
-        private void UpperLeftEnabler_Click(object sender, RoutedEventArgs e)
-        {
-            enablerClick(BucketPosition.LEFT_UP);
-        }
+        #endregion
     }
 }
