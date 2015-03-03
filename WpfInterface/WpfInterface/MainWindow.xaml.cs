@@ -114,6 +114,7 @@ namespace WpfInterface
         public void selectBucket(BucketPosition pos)
         {
             System.Windows.Application.Current.Dispatcher.BeginInvoke(new ThreadStart(() => boxes[(int)pos].Fill = new SolidColorBrush(Colors.Cyan)));
+            System.Windows.Application.Current.Dispatcher.BeginInvoke(new ThreadStart(() => progressBars[(int)pos].Value = getController(pos).getVolume()));
             System.Timers.Timer myTimer = new System.Timers.Timer();
             myTimer.Elapsed += delegate { UnselectBucket(pos); };
             myTimer.Interval = 1000; // 1s
@@ -175,6 +176,8 @@ namespace WpfInterface
 
         private void RecordingButton_Click(object sender, RoutedEventArgs e)
         {
+            PlayButton.IsEnabled = true;
+            SaveButton.IsEnabled = true;
             if (recording)
             {
                 // I was recording, I will now stop it
@@ -223,6 +226,7 @@ namespace WpfInterface
                 // Loading movement to analyzer
                 skeletonClient.subscribe(new MovementAnalyzer(loadedMovement, "movementAnalyzerStream", 
                     new SlowerAction(Array.AsReadOnly<VlcController>(allControllers))));
+                PlayButton.IsEnabled = true;
             }
         }
 
@@ -275,13 +279,13 @@ namespace WpfInterface
             {
                 skeletonClient.unsubscribe(leftArmAnalyzer);
             }
-            allControllers[(int)BucketPosition.LEFT_UP] = new VlcController(IPs[(int)BucketPosition.LEFT_UP]);
+            allControllers[(int)BucketPosition.LEFT_UP]     = new VlcController(IPs[(int)BucketPosition.LEFT_UP]);
             allControllers[(int)BucketPosition.LEFT_CENTER] = new VlcController(IPs[(int)BucketPosition.LEFT_CENTER]);
-            allControllers[(int)BucketPosition.LEFT_DOWN] = new VlcController(IPs[(int)BucketPosition.LEFT_DOWN]);
+            allControllers[(int)BucketPosition.LEFT_DOWN]   = new VlcController(IPs[(int)BucketPosition.LEFT_DOWN]);
 
-            allControllers[(int)BucketPosition.RIGHT_UP] = new VlcController(IPs[(int)BucketPosition.RIGHT_UP]);
+            allControllers[(int)BucketPosition.RIGHT_UP]     = new VlcController(IPs[(int)BucketPosition.RIGHT_UP]);
             allControllers[(int)BucketPosition.RIGHT_CENTER] = new VlcController(IPs[(int)BucketPosition.RIGHT_CENTER]);
-            allControllers[(int)BucketPosition.RIGHT_DOWN] = new VlcController(IPs[(int)BucketPosition.RIGHT_DOWN]);
+            allControllers[(int)BucketPosition.RIGHT_DOWN]   = new VlcController(IPs[(int)BucketPosition.RIGHT_DOWN]);
 
             rightArmAnalyzer = new ArmAnalyzerListener(PositionAnalyzer.DEFAULT_MEDIA, JointType.ElbowRight, PositionAnalyzer.DEFAULT_OFFSET, true, this);
             leftArmAnalyzer = new ArmAnalyzerListener(PositionAnalyzer.DEFAULT_MEDIA, JointType.ElbowLeft, PositionAnalyzer.DEFAULT_OFFSET, false, this);

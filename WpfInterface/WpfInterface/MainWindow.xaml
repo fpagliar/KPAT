@@ -5,10 +5,11 @@
 
     <Grid Width="500" Height="300">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="117*"/>
-            <ColumnDefinition Width="50*"/>
+            <ColumnDefinition Width="350*"/>
+            <ColumnDefinition Width="67*"/>
+            <ColumnDefinition Width="84*"/>
         </Grid.ColumnDefinitions>
-        <Menu IsMainMenu="True" Margin="-272,-188,-272,453" Height="35" Grid.ColumnSpan="2">
+        <Menu IsMainMenu="True" Margin="-272,-188,-272,453" Height="35" Grid.ColumnSpan="3">
             <MenuItem Header="_Configuration" VerticalAlignment="Center" HorizontalAlignment="Center" Height="35">
                 <MenuItem Header="Set Server IP" Click="mnuServerip"/>
                 <MenuItem Header="Set VLC's IP " Click="mnuVLCip"/>
@@ -20,13 +21,13 @@
             </MenuItem>
             <MenuItem Header="_About" Click="mnuAbout" Height="35" />
         </Menu>
-        <Label Content="Kinect Client" RenderTransformOrigin="9.167,0.731" Margin="134,-188,91,409" FontSize="48" VerticalAlignment="Center" HorizontalAlignment="Center" Height="79" Background="#FF8F8F8F" Width="275" Grid.ColumnSpan="2"/>
-        <Canvas x:Name="skeletonCanvas" HorizontalAlignment="Right" Height="300" VerticalAlignment="Center" Width="500" Margin="-124,-85,124,85" RenderTransformOrigin="0.516,1.147" Grid.ColumnSpan="2"/>
+        <Label Content="Kinect Client" RenderTransformOrigin="9.167,0.731" Margin="134,-188,7.5,409" FontSize="48" VerticalAlignment="Center" HorizontalAlignment="Center" Height="79" Background="#FF8F8F8F" Width="275" Grid.ColumnSpan="2"/>
+        <Canvas x:Name="skeletonCanvas" HorizontalAlignment="Right" Height="300" VerticalAlignment="Center" Width="500" Margin="-79,-85,79,85" RenderTransformOrigin="0.516,1.147" Grid.ColumnSpan="3"/>
         <Button x:Name="RecordingButton" Content="Start Recording" HorizontalAlignment="Left" Margin="-251,-85,0,0" VerticalAlignment="Top" Width="98" Height="52" Click="RecordingButton_Click"/>
-        <Button x:Name="PlayButton" Content="Play" HorizontalAlignment="Left" Margin="-251,-11,0,0" VerticalAlignment="Top" Width="98" Height="52" Click="PlayButton_Click"/>
-        <Button x:Name="SaveButton" Content="Save" HorizontalAlignment="Left" Margin="-251,70,0,0" VerticalAlignment="Top" Width="98" Height="52" Click="SaveButton_Click"/>
+        <Button x:Name="PlayButton" Content="Play" HorizontalAlignment="Left" Margin="-251,-11,0,0" VerticalAlignment="Top" Width="98" Height="52" Click="PlayButton_Click" IsEnabled="False"/>
+        <Button x:Name="SaveButton" Content="Save" HorizontalAlignment="Left" Margin="-251,70,0,0" VerticalAlignment="Top" Width="98" Height="52" Click="SaveButton_Click" IsEnabled="False"/>
         <Button x:Name="LoadButton" Content="Load" HorizontalAlignment="Left" Margin="-251,150,0,0" VerticalAlignment="Top" Width="98" Height="52" Click="LoadButton_Click"/>
-        <ProgressBar x:Name="UpperRightBar" HorizontalAlignment="Left" Height="15" Margin="34.5,-29,0,0" VerticalAlignment="Top" Width="75" Value="25" RenderTransformOrigin="0.5,0.5" Grid.Column="1">
+        <ProgressBar x:Name="UpperRightBar" HorizontalAlignment="Left" Height="15" Margin="124,-29,-116,0" VerticalAlignment="Top" Width="76" Value="25" RenderTransformOrigin="0.5,0.5" Grid.Column="2" Maximum="256">
             <ProgressBar.RenderTransform>
                 <TransformGroup>
                     <ScaleTransform/>
@@ -36,9 +37,8 @@
                 </TransformGroup>
             </ProgressBar.RenderTransform>
         </ProgressBar>
-        <Rectangle Fill="#FFF4F4F5" HorizontalAlignment="Left" Height="75" Margin="329,-60,0,0" Stroke="Black" VerticalAlignment="Top" Width="75" Grid.ColumnSpan="2"/>
-        <Rectangle x:Name="UpperRightBox" Fill="#FFF4F4F5" HorizontalAlignment="Left" Height="75" Margin="329,-60,0,0" Stroke="Black" VerticalAlignment="Top" Width="75" Grid.ColumnSpan="2"/>
-        <ProgressBar x:Name="MiddleRightBar" HorizontalAlignment="Left" Height="15" Margin="34.5,158,0,0" VerticalAlignment="Top" Width="75" Value="25" RenderTransformOrigin="0.5,0.5" Grid.Column="1">
+        <Rectangle x:Name="UpperRightBox" Fill="#FFF4F4F5" HorizontalAlignment="Left" Height="75" Margin="70,-60,-61,0" Stroke="Black" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
+        <ProgressBar x:Name="MiddleRightBar" HorizontalAlignment="Left" Height="15" Margin="124,158,-116,0" VerticalAlignment="Top" Width="76" Value="25" RenderTransformOrigin="0.5,0.5" Grid.Column="2" Maximum="256">
             <ProgressBar.RenderTransform>
                 <TransformGroup>
                     <ScaleTransform/>
@@ -48,8 +48,8 @@
                 </TransformGroup>
             </ProgressBar.RenderTransform>
         </ProgressBar>
-        <Rectangle x:Name="MiddleRightBox" Fill="#FFF4F4F5" HorizontalAlignment="Left" Height="75" Margin="329,127,0,0" Stroke="Black" VerticalAlignment="Top" Width="75" Grid.ColumnSpan="2"/>
-        <ProgressBar x:Name="LowerRightBar" HorizontalAlignment="Left" Height="15" Margin="34.5,346,0,-61" VerticalAlignment="Top" Width="75" Value="25" RenderTransformOrigin="0.5,0.5" Grid.Column="1">
+        <Rectangle x:Name="MiddleRightBox" Fill="#FFF4F4F5" HorizontalAlignment="Left" Height="75" Margin="70,127,-61,0" Stroke="Black" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
+        <ProgressBar x:Name="LowerRightBar" HorizontalAlignment="Left" Height="15" Margin="124,346,-116,-61" VerticalAlignment="Top" Width="76" Value="25" RenderTransformOrigin="0.5,0.5" Grid.Column="2" Maximum="256">
             <ProgressBar.RenderTransform>
                 <TransformGroup>
                     <ScaleTransform/>
@@ -59,8 +59,8 @@
                 </TransformGroup>
             </ProgressBar.RenderTransform>
         </ProgressBar>
-        <Rectangle x:Name="LowerRightBox" Fill="#FFF4F4F5" HorizontalAlignment="Left" Height="75" Margin="329,315,0,-90" Stroke="Black" VerticalAlignment="Top" Width="75" Grid.ColumnSpan="2"/>
-        <ProgressBar x:Name="UpperLeftBar" HorizontalAlignment="Left" Height="15" Margin="-34,-29,0,0" VerticalAlignment="Top" Width="75" Value="25" RenderTransformOrigin="0.5,0.5">
+        <Rectangle x:Name="LowerRightBox" Fill="#FFF4F4F5" HorizontalAlignment="Left" Height="75" Margin="70,315,-61,-90" Stroke="Black" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
+        <ProgressBar x:Name="UpperLeftBar" HorizontalAlignment="Left" Height="15" Margin="-144,-29,0,0" VerticalAlignment="Top" Width="75" Value="25" RenderTransformOrigin="0.5,0.5" Maximum="256">
             <ProgressBar.RenderTransform>
                 <TransformGroup>
                     <ScaleTransform/>
@@ -71,7 +71,7 @@
             </ProgressBar.RenderTransform>
         </ProgressBar>
         <Rectangle x:Name="UpperLeftBox" Fill="#FFF4F4F5" HorizontalAlignment="Left" Height="75" Margin="-90,-60,0,0" Stroke="Black" VerticalAlignment="Top" Width="75"/>
-        <ProgressBar x:Name="MiddleLeftBar" HorizontalAlignment="Left" Height="15" Margin="-34,158,0,0" VerticalAlignment="Top" Width="75" Value="25" RenderTransformOrigin="0.5,0.5">
+        <ProgressBar x:Name="MiddleLeftBar" HorizontalAlignment="Left" Height="15" Margin="-144,158,0,0" VerticalAlignment="Top" Width="75" Value="25" RenderTransformOrigin="0.5,0.5" Maximum="256">
             <ProgressBar.RenderTransform>
                 <TransformGroup>
                     <ScaleTransform/>
@@ -82,7 +82,7 @@
             </ProgressBar.RenderTransform>
         </ProgressBar>
         <Rectangle x:Name="MiddleLeftBox" Fill="#FFF4F4F5" HorizontalAlignment="Left" Height="75" Margin="-90,127,0,0" Stroke="Black" VerticalAlignment="Top" Width="75"/>
-        <ProgressBar x:Name="LowerLeftBar" HorizontalAlignment="Left" Height="15" Margin="-34,346,0,-61" VerticalAlignment="Top" Width="75" Value="25" RenderTransformOrigin="0.5,0.5">
+        <ProgressBar x:Name="LowerLeftBar" HorizontalAlignment="Left" Height="15" Margin="-144,346,0,-61" VerticalAlignment="Top" Width="75" Value="25" RenderTransformOrigin="0.5,0.5" Maximum="256">
             <ProgressBar.RenderTransform>
                 <TransformGroup>
                     <ScaleTransform/>

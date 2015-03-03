@@ -11,6 +11,7 @@ namespace WpfInterface
         private static int VOL_STEP = 10;
         // To run the vlc's, from console:
         // $>..../vlc.exe -I qt --rc-host localhost:9999
+        private int currentVolLevel;
 
         public VlcController(string ip, int port = 9999)
         {
@@ -24,28 +25,25 @@ namespace WpfInterface
             runCommandAndGetAnswer("pause");
         }
 
-        public void setVolume(int value)
-        {
-            runCommandAndGetAnswer("volume " + value);
-        }
+        //public void volumeStepUp()
+        //{
+        //    runCommandAndGetAnswer("volup " + VOL_STEP);
+        //}
 
-        public void volumeStepUp()
-        {
-            runCommandAndGetAnswer("volup " + VOL_STEP);
-        }
-
-        public void volumeStepDown()
-        {
-            runCommandAndGetAnswer("voldown " + VOL_STEP);
-        }
+        //public void volumeStepDown()
+        //{
+        //    runCommandAndGetAnswer("voldown " + VOL_STEP);
+        //}
 
         public void fullVolume()
         {
+            currentVolLevel = 256;
             runCommandAndGetAnswer("volume 256");
         }
 
         public void noVolume()
         {
+            currentVolLevel = 0;
             runCommandAndGetAnswer("volume 1");
         }
 
@@ -67,6 +65,23 @@ namespace WpfInterface
         public void normal()
         {
             runCommandAndGetAnswer("normal");
+        }
+
+        public void toggleVolume()
+        {
+            if (currentVolLevel == 0)
+            {
+                fullVolume();
+            }
+            else
+            {
+                noVolume();
+            }
+        }
+
+        public int getVolume()
+        {
+            return currentVolLevel;
         }
 
         private string runCommandAndGetAnswer(string command)

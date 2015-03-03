@@ -21,16 +21,15 @@ namespace WpfInterface
         private int secsDelay = 1;
         private float offset;
         private int mediaSize;
+        private JointType joint;
+        private bool right;
+        private MainWindow container;
 
         private float[] sumZ = new float[MAX_MEDIA];
         private DateTime[] lastUses = new DateTime[6];
-        private bool[] volumeBucketStatus = new bool[6];
 
-        private int cant = 0;
-        private JointType joint;
         private DateTime lastUpdate = DateTime.Now;
-        private bool right;
-        private MainWindow container;
+        private int cant = 0;
 
         public PositionAnalyzer(int mediaSize, JointType joint, float offset, bool right, MainWindow container)
         {
@@ -41,7 +40,6 @@ namespace WpfInterface
             for (int i = 0; i < 6; i++)
             {
                 lastUses[i] = DateTime.Now;
-                volumeBucketStatus[i] = true;
             }
             this.right = right;
         }
@@ -79,14 +77,14 @@ namespace WpfInterface
             {
                 cant = 0;
             }
+
             lastUpdate = DateTime.Now;
 
             // START POSITION ANALYSIS
             double xRot;
             double yRot;
             double zRot;
-            SkeletonUtils.ExtractRotationInDegrees(skeleton.BoneOrientations[joint].AbsoluteRotation.Quaternion,
-                out xRot, out yRot, out zRot);
+            SkeletonUtils.ExtractRotationInDegrees(skeleton.BoneOrientations[joint].AbsoluteRotation.Quaternion, out xRot, out yRot, out zRot);
 
             sumZ[cant % mediaSize] = (float)zRot;
             cant++;
@@ -102,10 +100,8 @@ namespace WpfInterface
                 mediaZ += sumZ[i];
             }
             mediaZ /= mediaSize;
-            int plusIndex = 0;
             if (!right)
             {
-                plusIndex = 3;
                 mediaZ = (-mediaZ);
             }
 
@@ -113,21 +109,11 @@ namespace WpfInterface
             {
                 if (lastUses[0].AddSeconds(secsDelay) < DateTime.Now)
                 {
-                    Thread thread;
                     MainWindow.BucketPosition position = (right) ? MainWindow.BucketPosition.RIGHT_DOWN : MainWindow.BucketPosition.LEFT_DOWN; 
-                    if (volumeBucketStatus[0 + plusIndex])
-                    {
-                        thread = new Thread(container.getController(position).noVolume);
-                    }
-                    else
-                    {
-                        thread = new Thread(container.getController(position).fullVolume);
-                    }
-                    thread.Start();
+                    new Thread(container.getController(position).toggleVolume).Start();
                     container.selectBucket(position);
 
                     lastUses[0] = DateTime.Now;
-                    volumeBucketStatus[0 + plusIndex] = !volumeBucketStatus[0 + plusIndex];
                 }
                 return Colors.Cyan;
             }
@@ -135,21 +121,10 @@ namespace WpfInterface
             {
                 if (lastUses[1].AddSeconds(secsDelay) < DateTime.Now)
                 {
-                    Thread thread;
                     MainWindow.BucketPosition position = (right) ? MainWindow.BucketPosition.RIGHT_CENTER : MainWindow.BucketPosition.LEFT_CENTER;
-                    if (volumeBucketStatus[1 + plusIndex])
-                    {
-                        thread = new Thread(container.getController(position).noVolume);
-                    }
-                    else
-                    {
-                        thread = new Thread(container.getController(position).fullVolume);
-                    }
-                    thread.Start();
+                    new Thread(container.getController(position).toggleVolume).Start();
                     container.selectBucket(position);
-
                     lastUses[1] = DateTime.Now;
-                    volumeBucketStatus[1 + plusIndex] = !volumeBucketStatus[1 + plusIndex];
                 }
                 return Colors.Purple;
             }
@@ -157,26 +132,13 @@ namespace WpfInterface
             {
                 if (lastUses[2].AddSeconds(secsDelay) < DateTime.Now)
                 {
-                    Thread thread;
                     MainWindow.BucketPosition position = (right) ? MainWindow.BucketPosition.RIGHT_UP : MainWindow.BucketPosition.LEFT_UP;
-                    if (volumeBucketStatus[2 + plusIndex])
-                    {
-                        thread = new Thread(container.getController(position).noVolume);
-                    }
-                    else
-                    {
-                        thread = new Thread(container.getController(position).fullVolume);
-                    }
-                    thread.Start();
+                    new Thread(container.getController(position).toggleVolume).Start();
                     container.selectBucket(position);
-
                     lastUses[2] = DateTime.Now;
-                    volumeBucketStatus[2 + plusIndex] = !volumeBucketStatus[2 + plusIndex];
                 }
                 return Colors.Red;
             }
-
-
             return Colors.Brown;
         }
     }
