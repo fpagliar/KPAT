@@ -95,11 +95,7 @@ namespace WpfInterface
             }
 
             float mediaZ = 0;
-            for (int i = 0; i < mediaSize; i++)
-            {
-                mediaZ += sumZ[i];
-            }
-            mediaZ /= mediaSize;
+            mediaZ = getAverage(mediaZ);
             if (!right)
             {
                 mediaZ = (-mediaZ);
@@ -151,6 +147,16 @@ namespace WpfInterface
                 return Colors.Red;
             }
             return Colors.Brown;
+        }
+
+        private float getAverage(float mediaZ)
+        {
+            for (int i = 0; i < mediaSize; i++)
+            {
+                mediaZ += sumZ[i];
+            }
+            mediaZ /= mediaSize;
+            return mediaZ;
         }
     }
 }
