@@ -6,11 +6,12 @@ using System.Threading.Tasks;
 
 namespace WpfInterface
 {
-    class FasterAction : Action
+    class NormalSpeedAction : Action
     {
+
         private IReadOnlyList<VlcController> controllers;
 
-        public FasterAction(IReadOnlyList<VlcController> controllers)
+        public NormalSpeedAction(IReadOnlyList<VlcController> controllers)
         {
             this.controllers = controllers;
         }
@@ -18,8 +19,7 @@ namespace WpfInterface
         public void perform()
         {
             foreach (VlcController controller in controllers)
-                controller.faster();
+                controller.normal();
         }
-
     }
 }

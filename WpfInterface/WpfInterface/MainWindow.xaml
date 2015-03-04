@@ -20,7 +20,7 @@
             </MenuItem>
             <MenuItem Header="_About" Click="mnuAbout" Height="35" />
         </Menu>
-        <Label Content="Kinect Client" RenderTransformOrigin="9.167,0.731" Margin="134,-188,7.5,409" FontSize="48" VerticalAlignment="Center" HorizontalAlignment="Center" Height="79" Background="#FF8F8F8F" Width="275" Grid.ColumnSpan="2"/>
+        <Label Content="KPAT" RenderTransformOrigin="9.167,0.731" Margin="134,-188,7.5,409" FontSize="48" VerticalAlignment="Center" HorizontalAlignment="Center" Height="79" Background="#FF8F8F8F" Width="275" Grid.ColumnSpan="2" HorizontalContentAlignment="Center"/>
         <Canvas x:Name="skeletonCanvas" HorizontalAlignment="Right" Height="300" VerticalAlignment="Center" Width="500" Margin="-79,-85,79,85" RenderTransformOrigin="0.516,1.147" Grid.ColumnSpan="3"/>
         <Button x:Name="RecordingButton" Content="Start Recording" HorizontalAlignment="Left" Margin="-251,-85,0,0" VerticalAlignment="Top" Width="98" Height="52" Click="RecordingButton_Click"/>
         <Button x:Name="PlayButton" Content="Play" HorizontalAlignment="Left" Margin="-251,-11,0,0" VerticalAlignment="Top" Width="98" Height="52" Click="PlayButton_Click" IsEnabled="False"/>
@@ -99,5 +99,11 @@
         <Button x:Name="MiddleLeftEnabler" Content="" HorizontalAlignment="Left" Margin="-10,153,0,0" VerticalAlignment="Top" Width="20" Height="20" Click="MiddleLeftEnabler_Click"/>
         <Button x:Name="LowerLeftEnabler" Content="" HorizontalAlignment="Left" Margin="-10,348,0,-68" VerticalAlignment="Top" Width="20" Height="20" Click="LowerLeftEnabler_Click"/>
         <Ellipse x:Name="voiceControl" Grid.Column="2" Fill="#FFF4F4F5" HorizontalAlignment="Left" Height="50" Margin="270,-133,-236,0" Stroke="Black" VerticalAlignment="Top" Width="50"/>
+        <Button x:Name="FasterMovement" Content="Faster - Load" HorizontalAlignment="Left" Margin="222,-16,-236,0" VerticalAlignment="Top" Width="98" Height="52" Click="FasterLoadButton_Click" Grid.Column="2"/>
+        <Button x:Name="SlowerMovement" Content="Normal - Load" HorizontalAlignment="Left" Margin="222,91,-236,0" VerticalAlignment="Top" Width="98" Height="52" Click="NormalSpeedLoadButton_Click" Grid.Column="2"/>
+        <Button x:Name="VolupMovement" Content="Slower - Load" HorizontalAlignment="Left" Margin="222,204,-236,0" VerticalAlignment="Top" Width="98" Height="52" Click="SlowerLoadButton_Click" Grid.Column="2"/>
+        <Button x:Name="fasterEnabler" Content="" Grid.Column="2" HorizontalAlignment="Left" Margin="305,-16,-236,0" VerticalAlignment="Top" Width="15" Height="15" Background="Black" Click="FasterButton_Click"/>
+        <Button x:Name="normalEnabler" Content="" Grid.Column="2" HorizontalAlignment="Left" Margin="305,91,-236,0" VerticalAlignment="Top" Width="15" Height="15" Background="Black" Click="NormalButton_Click"/>
+        <Button x:Name="slowerEnabler" Content="" Grid.Column="2" HorizontalAlignment="Left" Margin="305,204,-236,0" VerticalAlignment="Top" Width="15" Height="15" Background="Black" Click="SlowerButton_Click"/>
     </Grid>
 </Window>

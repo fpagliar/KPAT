@@ -56,7 +56,7 @@ namespace WpfInterface
         {
             FASTER = 0,
             SLOWER = 1,
-            VOLUME_UP = 2
+            NORMAL = 2
         }
         MovementAnalyzer[] movements = new MovementAnalyzer[3];
 
@@ -217,6 +217,12 @@ namespace WpfInterface
                     skeletonClient.subscribe(leftArmAnalyzer);
                 if (rightArmAnalyzer != null)
                     skeletonClient.subscribe(rightArmAnalyzer);
+                for (int i = 0; i < movements.Length; i++)
+                    if (movements[i] != null)
+                        skeletonClient.subscribe(movements[i]);
+                for (int i = 0; i < allControllers.Length; i++)
+                    if (allControllers[i] != null)
+                        allControllers[i].togglePlay();
             }
         }
 
@@ -229,6 +235,12 @@ namespace WpfInterface
                     skeletonClient.unsubscribe(leftArmAnalyzer);
                 if (rightArmAnalyzer != null)
                     skeletonClient.unsubscribe(rightArmAnalyzer);
+                for (int i = 0; i < movements.Length; i++)
+                    if (movements[i] != null)
+                        skeletonClient.unsubscribe(movements[i]);
+                for (int i = 0; i < allControllers.Length; i++)
+                    if (allControllers[i] != null)
+                        allControllers[i].togglePlay();
             }
         }
 
@@ -282,11 +294,82 @@ namespace WpfInterface
                 loadedMovement.loadFromFile(dlg.FileName);
                 skeletonClient.subscribe(new RecordingReproducer(skeletonCanvas, loadedMovement, loadedMovement.getTag(),
                     Colors.Black, skeletonClient));
+            }
+        }
+
+        private void FasterLoadButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (movements[(int)Movement.FASTER] != null)
+            {
+                SkeletonRecording movement = movements[(int)Movement.FASTER].getMovement();
+                skeletonClient.subscribe(new RecordingReproducer(skeletonCanvas, movement, movement.getTag(),
+                    Colors.Black, skeletonClient));
+                return;
+            }
+            Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
+            if (dlg.ShowDialog() == true)
+            {
+                SkeletonRecording movement = new SkeletonRecording("fasterLoadedMovement");
+                movement.loadFromFile(dlg.FileName);
+                skeletonClient.subscribe(new RecordingReproducer(skeletonCanvas, movement, movement.getTag(),
+                    Colors.Black, skeletonClient));
 
                 // Loading movement to analyzer
-                skeletonClient.subscribe(new MovementAnalyzer(loadedMovement, "movementAnalyzerStream", 
-                    new SlowerAction(Array.AsReadOnly<VlcController>(allControllers))));
-                PlayButton.IsEnabled = true;
+                movements[(int)Movement.FASTER] = new MovementAnalyzer(movement, "FasterMovementAnalyzerStream",
+                    new FasterAction(Array.AsReadOnly<VlcController>(allControllers)));
+                skeletonClient.subscribe(movements[(int)Movement.FASTER]);
+                fasterEnabler.Background = new SolidColorBrush(Colors.Red);
+            }
+        }
+
+        private void SlowerLoadButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (movements[(int)Movement.SLOWER] != null)
+            {
+                SkeletonRecording movement = movements[(int)Movement.SLOWER].getMovement();
+                skeletonClient.subscribe(new RecordingReproducer(skeletonCanvas, movement, movement.getTag(),
+                    Colors.Black, skeletonClient));
+                return;
+            }
+            Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
+            if (dlg.ShowDialog() == true)
+            {
+                SkeletonRecording movement = new SkeletonRecording("slowerLoadedMovement");
+                movement.loadFromFile(dlg.FileName);
+                skeletonClient.subscribe(new RecordingReproducer(skeletonCanvas, movement, movement.getTag(),
+                    Colors.Black, skeletonClient));
+
+                // Loading movement to analyzer
+                movements[(int)Movement.SLOWER] = new MovementAnalyzer(movement, "SlowerMovementAnalyzerStream",
+                    new SlowerAction(Array.AsReadOnly<VlcController>(allControllers)));
+                skeletonClient.subscribe(movements[(int)Movement.SLOWER]);
+                slowerEnabler.Background = new SolidColorBrush(Colors.Red);
+            }
+        }
+
+        private void NormalSpeedLoadButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (movements[(int)Movement.NORMAL] != null)
+            {
+                SkeletonRecording movement = movements[(int)Movement.NORMAL].getMovement();
+                skeletonClient.subscribe(new RecordingReproducer(skeletonCanvas, movement, movement.getTag(),
+                    Colors.Black, skeletonClient));
+                return;
+            }
+            Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
+            if (dlg.ShowDialog() == true)
+            {
+                SkeletonRecording movement = new SkeletonRecording("normalSpeedLoadedMovement");
+                movement.loadFromFile(dlg.FileName);
+                skeletonClient.subscribe(new RecordingReproducer(skeletonCanvas, movement, movement.getTag(),
+                    Colors.Black, skeletonClient));
+
+                // Loading movement to analyzer
+                movements[(int)Movement.NORMAL] = new MovementAnalyzer(movement, "NormalMovementAnalyzerStream",
+                    new NormalSpeedAction(Array.AsReadOnly<VlcController>(allControllers)));
+                skeletonClient.subscribe(movements[(int)Movement.NORMAL]);
+
+                normalEnabler.Background = new SolidColorBrush(Colors.Red);
             }
         }
 
@@ -471,5 +554,35 @@ namespace WpfInterface
         }
 
         #endregion
+
+        private void FasterButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (movements[(int)Movement.FASTER] != null)
+            {
+                fasterEnabler.Background = new SolidColorBrush(Colors.Black);
+                skeletonClient.unsubscribe(movements[(int)Movement.FASTER]);
+                movements[(int)Movement.FASTER] = null;
+            }
+        }
+
+        private void NormalButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (movements[(int)Movement.NORMAL] != null)
+            {
+                normalEnabler.Background = new SolidColorBrush(Colors.Black);
+                skeletonClient.unsubscribe(movements[(int)Movement.NORMAL]);
+                movements[(int)Movement.NORMAL] = null;
+            }
+        }
+
+        private void SlowerButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (movements[(int)Movement.SLOWER] != null)
+            {
+                slowerEnabler.Background = new SolidColorBrush(Colors.Black);
+                skeletonClient.unsubscribe(movements[(int)Movement.SLOWER]);
+                movements[(int)Movement.SLOWER] = null;
+            }
+        }
     }
 }

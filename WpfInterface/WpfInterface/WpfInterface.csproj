@@ -61,6 +61,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="ListenerActions\Action.cs" />
+    <Compile Include="ListenerActions\NormalSpeedAction.cs" />
     <Compile Include="Position\ArmAnalyzerListener.cs" />
     <Compile Include="ListenerActions\CameraListener.cs" />
     <Compile Include="ListenerActions\ClientListener.cs" />

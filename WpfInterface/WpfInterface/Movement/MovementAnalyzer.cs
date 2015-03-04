@@ -30,6 +30,11 @@ namespace WpfInterface
                 this.threshold = value;
         }
 
+        public SkeletonRecording getMovement()
+        {
+            return movement;
+        }
+
         public void dataArrived(object data)
         {
             Skeleton skeleton = SkeletonUtils.defaultSkeleton(data);

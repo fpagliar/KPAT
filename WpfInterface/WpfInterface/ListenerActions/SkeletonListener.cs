@@ -21,7 +21,7 @@ namespace WpfInterface
     {
 
         private static string drawingTag = "basicUISkeleton";
-        private static Color drawingColor = Colors.Cyan;
+        private static Color drawingColor = Colors.Blue;
 
         private Canvas skeletonCanvas;
 
