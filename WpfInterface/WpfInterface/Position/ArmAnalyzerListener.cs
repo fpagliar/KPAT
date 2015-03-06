@@ -16,9 +16,9 @@ namespace WpfInterface
         private PositionAnalyzer analyzer;
         private Canvas skelcanvas;
 
-        public ArmAnalyzerListener(int mediaSize, JointType joint, float delta, bool right, MainWindow container)
+        public ArmAnalyzerListener(int mediaSize, float delta, bool right, MainWindow container)
         {
-            analyzer = new PositionAnalyzer(mediaSize, joint, delta, right, container);
+            analyzer = new PositionAnalyzer(mediaSize, delta, right, container);
             this.skelcanvas = container.getCanvas();
         }
 

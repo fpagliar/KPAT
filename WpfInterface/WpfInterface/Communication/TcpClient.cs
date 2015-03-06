@@ -37,6 +37,11 @@ namespace WpfInterface
             listeners = newBag;
         }
 
+        public void unsubscribeAll()
+        {
+            listeners = new ConcurrentBag<ClientListener>();
+        }
+
         public List<ClientListener> getListerners()
         {
             if (!active)
@@ -88,11 +93,14 @@ namespace WpfInterface
         {
             foreach (ClientListener listener in listeners)
             {
-                try
-                {
+                //try
+                //{
                     listener.dataArrived(data);
-                }
-                catch (System.Exception) { } // Ignore
+                //}
+                //catch (System.Exception e) 
+                //{
+                //    Debug.WriteLine("Exception: " + e.ToString());
+                //} // Ignore
             }
         }
 

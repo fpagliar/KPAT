@@ -36,7 +36,7 @@
                 </TransformGroup>
             </ProgressBar.RenderTransform>
         </ProgressBar>
-        <Rectangle x:Name="UpperRightBox" Fill="#FFF4F4F5" HorizontalAlignment="Left" Height="75" Margin="70,-60,-61,0" Stroke="Black" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
+        <Rectangle x:Name="UpperRightBox" Fill="#FFF4F4F5" HorizontalAlignment="Left" Height="75" Margin="70,-60,-61,0" Stroke="Red" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
         <ProgressBar x:Name="MiddleRightBar" HorizontalAlignment="Left" Height="15" Margin="124,158,-116,0" VerticalAlignment="Top" Width="76" Value="25" RenderTransformOrigin="0.5,0.5" Grid.Column="2" Maximum="256">
             <ProgressBar.RenderTransform>
                 <TransformGroup>
@@ -47,7 +47,7 @@
                 </TransformGroup>
             </ProgressBar.RenderTransform>
         </ProgressBar>
-        <Rectangle x:Name="MiddleRightBox" Fill="#FFF4F4F5" HorizontalAlignment="Left" Height="75" Margin="70,127,-61,0" Stroke="Black" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
+        <Rectangle x:Name="MiddleRightBox" Fill="#FFF4F4F5" HorizontalAlignment="Left" Height="75" Margin="70,127,-61,0" Stroke="Red" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
         <ProgressBar x:Name="LowerRightBar" HorizontalAlignment="Left" Height="15" Margin="124,346,-116,-61" VerticalAlignment="Top" Width="76" Value="25" RenderTransformOrigin="0.5,0.5" Grid.Column="2" Maximum="256">
             <ProgressBar.RenderTransform>
                 <TransformGroup>
@@ -58,7 +58,7 @@
                 </TransformGroup>
             </ProgressBar.RenderTransform>
         </ProgressBar>
-        <Rectangle x:Name="LowerRightBox" Fill="#FFF4F4F5" HorizontalAlignment="Left" Height="75" Margin="70,315,-61,-90" Stroke="Black" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
+        <Rectangle x:Name="LowerRightBox" Fill="#FFF4F4F5" HorizontalAlignment="Left" Height="75" Margin="70,315,-61,-90" Stroke="Red" VerticalAlignment="Top" Width="75" Grid.Column="2"/>
         <ProgressBar x:Name="UpperLeftBar" HorizontalAlignment="Left" Height="15" Margin="-144,-29,0,0" VerticalAlignment="Top" Width="75" Value="25" RenderTransformOrigin="0.5,0.5" Maximum="256">
             <ProgressBar.RenderTransform>
                 <TransformGroup>
@@ -69,7 +69,7 @@
                 </TransformGroup>
             </ProgressBar.RenderTransform>
         </ProgressBar>
-        <Rectangle x:Name="UpperLeftBox" Fill="#FFF4F4F5" HorizontalAlignment="Left" Height="75" Margin="-90,-60,0,0" Stroke="Black" VerticalAlignment="Top" Width="75"/>
+        <Rectangle x:Name="UpperLeftBox" Fill="#FFF4F4F5" HorizontalAlignment="Left" Height="75" Margin="-90,-60,0,0" Stroke="Red" VerticalAlignment="Top" Width="75"/>
         <ProgressBar x:Name="MiddleLeftBar" HorizontalAlignment="Left" Height="15" Margin="-144,158,0,0" VerticalAlignment="Top" Width="75" Value="25" RenderTransformOrigin="0.5,0.5" Maximum="256">
             <ProgressBar.RenderTransform>
                 <TransformGroup>
@@ -80,7 +80,7 @@
                 </TransformGroup>
             </ProgressBar.RenderTransform>
         </ProgressBar>
-        <Rectangle x:Name="MiddleLeftBox" Fill="#FFF4F4F5" HorizontalAlignment="Left" Height="75" Margin="-90,127,0,0" Stroke="Black" VerticalAlignment="Top" Width="75"/>
+        <Rectangle x:Name="MiddleLeftBox" Fill="#FFF4F4F5" HorizontalAlignment="Left" Height="75" Margin="-90,127,0,0" Stroke="Red" VerticalAlignment="Top" Width="75"/>
         <ProgressBar x:Name="LowerLeftBar" HorizontalAlignment="Left" Height="15" Margin="-144,346,0,-61" VerticalAlignment="Top" Width="75" Value="25" RenderTransformOrigin="0.5,0.5" Maximum="256">
             <ProgressBar.RenderTransform>
                 <TransformGroup>
@@ -91,7 +91,7 @@
                 </TransformGroup>
             </ProgressBar.RenderTransform>
         </ProgressBar>
-        <Rectangle x:Name="LowerLeftBox" Fill="#FFF4F4F5" HorizontalAlignment="Left" Height="75" Margin="-90,315,0,-90" Stroke="Black" VerticalAlignment="Top" Width="75"/>
+        <Rectangle x:Name="LowerLeftBox" Fill="#FFF4F4F5" HorizontalAlignment="Left" Height="75" Margin="-90,315,0,-90" Stroke="Red" VerticalAlignment="Top" Width="75"/>
         <Button x:Name="UpperRightEnabler" Content="" Grid.Column="2" HorizontalAlignment="Left" Margin="42,-32,0,0" VerticalAlignment="Top" Width="20" Height="20" Click="UpperRightEnabler_Click"/>
         <Button x:Name="MiddleRightEnabler" Content="" Grid.Column="2" HorizontalAlignment="Left" Margin="42,153,0,0" VerticalAlignment="Top" Width="20" Height="20" Click="MiddleRightEnabler_Click"/>
         <Button x:Name="LowerRightEnabler" Content="" Grid.Column="2" HorizontalAlignment="Left" Margin="42,348,0,-68" VerticalAlignment="Top" Width="20" Height="20" Click="LowerRightEnabler_Click"/>

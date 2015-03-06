@@ -8,17 +8,18 @@ namespace WpfInterface
 {
     class FasterAction : Action
     {
-        private IReadOnlyList<VlcController> controllers;
+        private MainWindow container;
 
-        public FasterAction(IReadOnlyList<VlcController> controllers)
+        public FasterAction(MainWindow container)
         {
-            this.controllers = controllers;
+            this.container = container;
         }
 
         public void perform()
         {
-            foreach (VlcController controller in controllers)
-                controller.faster();
+            foreach (VlcController controller in container.getControllers())
+                if(controller != null)
+                    controller.faster();
         }
 
     }

@@ -19,7 +19,8 @@ namespace WpfInterface
         public void perform()
         {
             foreach (VlcController controller in controllers)
-                controller.normal();
+                if (controller != null)
+                    controller.normal();
         }
     }
 }

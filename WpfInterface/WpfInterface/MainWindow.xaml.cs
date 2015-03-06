@@ -26,8 +26,9 @@ namespace WpfInterface
     /// </summary>
     public partial class MainWindow : Window
     {
-        private const String defaultVLCIp = "127.0.0.1";
-        private const String defaultVLCPort = "9999";
+        private const String defaultVLCIp = "192.168.0.88";
+        private const String defaultVLCPort = "999";
+        private static int index = 9;
         private const string DEFAULT_SERVER_IP = "127.0.0.1";
 
         private static TcpClient skeletonClient;
@@ -47,6 +48,7 @@ namespace WpfInterface
             RIGHT_DOWN = 5
         }
         private VlcController[] allControllers = new VlcController[6];
+        private bool bucketsEnabled = true;
 
         System.Windows.Controls.ProgressBar[] progressBars = new System.Windows.Controls.ProgressBar[6];
         System.Windows.Shapes.Rectangle[] boxes = new System.Windows.Shapes.Rectangle[6];
@@ -138,7 +140,8 @@ namespace WpfInterface
 
         private void UnselectBucket(BucketPosition pos)
         {
-            System.Windows.Application.Current.Dispatcher.BeginInvoke(new ThreadStart(() => boxes[(int)pos].Fill = new SolidColorBrush(Colors.Black)));
+            System.Windows.Application.Current.Dispatcher.BeginInvoke(
+                new ThreadStart(() => boxes[(int)pos].Fill = new SolidColorBrush((getController(pos).getVolume() > 100)? Colors.Green : Colors.White)));
         }
 
         private void setupServer(string serverIP)
@@ -163,8 +166,8 @@ namespace WpfInterface
                 recordingStream = new CurrentRecording();
                 skeletonClient.subscribe(recordingStream);
 
-                rightArmAnalyzer = new ArmAnalyzerListener(PositionAnalyzer.DEFAULT_MEDIA, JointType.ElbowRight, PositionAnalyzer.DEFAULT_OFFSET, true, this);
-                leftArmAnalyzer = new ArmAnalyzerListener(PositionAnalyzer.DEFAULT_MEDIA, JointType.ElbowLeft, PositionAnalyzer.DEFAULT_OFFSET, false, this);
+                rightArmAnalyzer = new ArmAnalyzerListener(PositionAnalyzer.DEFAULT_MEDIA, PositionAnalyzer.DEFAULT_OFFSET, true, this);
+                leftArmAnalyzer = new ArmAnalyzerListener(PositionAnalyzer.DEFAULT_MEDIA, PositionAnalyzer.DEFAULT_OFFSET, false, this);
             }
             else
             {
@@ -208,11 +211,12 @@ namespace WpfInterface
             return Array.AsReadOnly<VlcController>(allControllers);
         }
 
-        public void startRecognized()
+        public void setUpRecognized()
         {
             System.Windows.Application.Current.Dispatcher.BeginInvoke(new ThreadStart(() => voiceControl.Fill = new SolidColorBrush(Colors.Green)));
             if (skeletonClient != null)
             {
+                skeletonClient.unsubscribeAll();
                 if (leftArmAnalyzer != null)
                     skeletonClient.subscribe(leftArmAnalyzer);
                 if (rightArmAnalyzer != null)
@@ -220,9 +224,6 @@ namespace WpfInterface
                 for (int i = 0; i < movements.Length; i++)
                     if (movements[i] != null)
                         skeletonClient.subscribe(movements[i]);
-                for (int i = 0; i < allControllers.Length; i++)
-                    if (allControllers[i] != null)
-                        allControllers[i].togglePlay();
             }
         }
 
@@ -238,9 +239,44 @@ namespace WpfInterface
                 for (int i = 0; i < movements.Length; i++)
                     if (movements[i] != null)
                         skeletonClient.unsubscribe(movements[i]);
-                for (int i = 0; i < allControllers.Length; i++)
-                    if (allControllers[i] != null)
-                        allControllers[i].togglePlay();
+            }
+        }
+
+        public void toggleBuckets()
+        {
+            if (bucketsEnabled)
+            {
+                // Deactivate them
+                foreach (BucketPosition pos in Enum.GetValues(typeof(BucketPosition)))
+                {
+                    if (allControllers[(int)pos] != null)
+                    {
+                        System.Windows.Application.Current.Dispatcher.BeginInvoke(new ThreadStart(() => enablers[(int)pos].IsEnabled = false));
+                    }
+                }
+                if (leftArmAnalyzer != null)
+                    skeletonClient.unsubscribe(leftArmAnalyzer);
+                if (rightArmAnalyzer != null)
+                    skeletonClient.unsubscribe(rightArmAnalyzer);
+                System.Windows.Application.Current.Dispatcher.BeginInvoke(new ThreadStart(() => voiceControl.Fill = new SolidColorBrush(Colors.Orange)));
+                bucketsEnabled = false;
+            }
+            else
+            {
+                // Activate them
+                foreach (BucketPosition pos in Enum.GetValues(typeof(BucketPosition)))
+                {
+                    if (allControllers[(int)pos] != null)
+                    {
+                        System.Windows.Application.Current.Dispatcher.BeginInvoke(new ThreadStart(() => enablers[(int)pos].IsEnabled = true));
+                    }
+                }
+                if (leftArmAnalyzer != null)
+                    skeletonClient.subscribe(leftArmAnalyzer);
+                if (rightArmAnalyzer != null)
+                    skeletonClient.subscribe(rightArmAnalyzer);
+                System.Windows.Application.Current.Dispatcher.BeginInvoke(new ThreadStart(() => voiceControl.Fill = new SolidColorBrush(Colors.Green)));
+                bucketsEnabled = true;
             }
         }
 
@@ -316,7 +352,7 @@ namespace WpfInterface
 
                 // Loading movement to analyzer
                 movements[(int)Movement.FASTER] = new MovementAnalyzer(movement, "FasterMovementAnalyzerStream",
-                    new FasterAction(Array.AsReadOnly<VlcController>(allControllers)));
+                    new FasterAction(this));
                 skeletonClient.subscribe(movements[(int)Movement.FASTER]);
                 fasterEnabler.Background = new SolidColorBrush(Colors.Red);
             }
@@ -443,8 +479,9 @@ namespace WpfInterface
             bool isNumeric = int.TryParse(resp, out n);
             if (isNumeric)
             {
-                //this.gesturePrecision = n;
-                // TODO: set it 
+                foreach (MovementAnalyzer analyzer in movements)
+                    if (analyzer != null)
+                        analyzer.setThreshold(n);
             }
             else {
                 System.Windows.MessageBox.Show("Error - You Have Provided an Invalid Value", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -513,7 +550,8 @@ namespace WpfInterface
 
         private bool enable(BucketPosition pos)
         {
-            String IP = Microsoft.VisualBasic.Interaction.InputBox("Enter the IP and Port Ex: 192.168.0.1:9999", "KPAT", defaultVLCIp + ":" + defaultVLCPort);
+            String IP = Microsoft.VisualBasic.Interaction.InputBox("Enter the IP and Port Ex: 192.168.0.1:9999", "KPAT", defaultVLCIp + ":" + defaultVLCPort + index);
+            index--;
             String[] IPs = IP.Split(':');
             if (IPs.Length != 2)
             {

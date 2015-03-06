@@ -8,22 +8,86 @@ namespace WpfInterface
     public class VlcController
     {
         private NetworkStream serverStream;
+        private int port;
         private static int VOL_STEP = 10;
         // To run the vlc's, from console:
         // $>..../vlc.exe -I qt --rc-host localhost:9999
+        // C:\Program Files (x86)\VideoLAN\VLC>vlc --extraintf rc --rc-host 192.168.0.169:9999
+        //                                                                  My Public IP : port
+
         private int currentVolLevel;
+        private bool stopped;
 
         public VlcController(string ip, int port)
         {
             System.Net.Sockets.TcpClient clientSocket = new System.Net.Sockets.TcpClient();
             clientSocket.Connect(ip, port);
             serverStream = clientSocket.GetStream();
+            stopped = true;
+            currentVolLevel = 0;
+            this.port = port;
         }
 
-        public void togglePlay()
+        //public void play()
+        //{
+        //    if (stopped)
+        //    {
+        //        string ans = runCommandAndGetAnswer("play");
+        //    }
+        //    else
+        //    {
+        //        Debug.WriteLine(port + "not playing on unstopped");
+        //    }
+        //}
+
+        public void stop()
         {
-            runCommandAndGetAnswer("pause");
+            string ans = runCommandAndGetAnswer("stop");
+            stopped = true;
         }
+
+        public void togglePlayPause()
+        {
+            if (stopped)
+            {
+                string ans = runCommandAndGetAnswer("play");
+            }
+            else
+            {
+                string ans = runCommandAndGetAnswer("pause");
+            }
+            stopped = false;
+        }
+            //if (stopped)
+            //{
+            //    string ans = runCommandAndGetAnswer("play");
+            //    //if (!ans.Contains("status change: ( play state: 2 ): Play") || !ans.Contains("status change: ( play state: 1 ): Opening"))
+            //    //{
+            //    //    Debug.WriteLine("error playing:\n" + ans);
+            //    //} 
+            //    stopped = false;
+            //    paused = false;
+            //}
+            //else
+            //{
+            //    string ans = runCommandAndGetAnswer("pause");
+            //    if(paused)
+            //    {
+            //        //if (!ans.Contains("status change: ( play state: 2 ): Play"))
+            //        //{
+            //        //    Debug.WriteLine("error unpausing:\n" + ans);
+            //        //}
+            //    }
+            //    else
+            //    {
+            //        //if (!ans.Contains("status change: ( pause state: 3 ): Pause"))
+            //        //{
+            //        //    Debug.WriteLine("error pausing:\n" + ans);
+            //        //}
+
+            //    }
+            //    paused = !paused;
+            //}
 
         //public void volumeStepUp()
         //{
@@ -37,34 +101,54 @@ namespace WpfInterface
 
         public void fullVolume()
         {
+            string ans = runCommandAndGetAnswer("volume 256");
+            //if (!ans.Contains("volume: returned 0 (no error)"))
+            //{
+            //    Debug.WriteLine("error setting the volume:\n" + ans);
+            //}
             currentVolLevel = 256;
-            runCommandAndGetAnswer("volume 256");
         }
 
         public void noVolume()
         {
+            string ans = runCommandAndGetAnswer("volume 1");
+            //if (!ans.Contains("volume: returned 0 (no error)"))
+            //{
+            //    Debug.WriteLine("error setting the volume:\n" + ans);
+            //}
             currentVolLevel = 0;
-            runCommandAndGetAnswer("volume 1");
         }
 
-        public void stop()
-        {
-            runCommandAndGetAnswer("stop");
-        }
+        //public void stop()
+        //{
+        //    runCommandAndGetAnswer("stop");
+        //}
 
         public void faster()
         {
-            runCommandAndGetAnswer("faster");
+            string ans = runCommandAndGetAnswer("faster");
+            //if (!ans.Contains("faster: returned 0 (no error)") || !ans.Contains("status change: ( new rate:"))
+            //{
+            //    Debug.WriteLine("error setting faster:\n" + ans);
+            //}
         }
 
         public void slower()
         {
-            runCommandAndGetAnswer("slower");
+            string ans = runCommandAndGetAnswer("slower");
+            //if (!ans.Contains("slower: returned 0 (no error)") || !ans.Contains("status change: ( new rate:"))
+            //{
+            //    Debug.WriteLine("error setting slower:\n" + ans);
+            //}
         }
 
         public void normal()
         {
-            runCommandAndGetAnswer("normal");
+            string ans = runCommandAndGetAnswer("normal");
+            //if (!ans.Contains("normal: returned 0 (no error)") || !ans.Contains("status change: ( new rate:"))
+            //{
+            //    Debug.WriteLine("error setting normal:\n" + ans);
+            //}
         }
 
         public void toggleVolume()
@@ -93,12 +177,15 @@ namespace WpfInterface
 
         private string runCommandAndGetAnswer(string command)
         {
+            Debug.WriteLine(port + " will run " + command);
             byte[] bytes = Encoding.ASCII.GetBytes(command + "\n");
             serverStream.Write(bytes, 0, bytes.Length);
             serverStream.Flush();
-            byte[] read = new byte[1000];
+            byte[] read = new byte[1024];
             int length = serverStream.Read(read, 0, read.Length);
-            return Encoding.ASCII.GetString(read, 0, length);
+            string ans = Encoding.ASCII.GetString(read, 0, length);
+            Debug.WriteLine(port + " answered \n" + ans);
+            return ans;
         }
     }
 }

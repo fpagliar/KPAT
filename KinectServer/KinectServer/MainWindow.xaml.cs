@@ -48,11 +48,14 @@ namespace KinectServer
 
                 voiceController = new VoiceController();
                 voiceController.SpeechRecognized += Recognizer_SpeechRecognized;
-                voiceController.RecognitionConfidence = 0.50;
+                //voiceController.RecognitionConfidence = 0.50;
 
                 List<String> phrases = new List<string>();
-                phrases.Add("STOP"); // TODO: properties file
-                phrases.Add("START"); // TODO: properties file
+                phrases.Add("SET UP");    // TODO: properties file
+                phrases.Add("STOP");    // TODO: properties file
+                phrases.Add("PAUSE");   // TODO: properties file
+                phrases.Add("START");   // TODO: properties file
+                phrases.Add("BUCKETS"); // TODO: properties file
 
                 sensor.Start();
                 sensor.ElevationAngle = 10;
@@ -64,10 +67,10 @@ namespace KinectServer
 
         void Recognizer_SpeechRecognized(object sender, Microsoft.Speech.Recognition.SpeechRecognizedEventArgs e)
         {
-            if (e.Result.Confidence >= voiceController.RecognitionConfidence)
-            {
-                voiceServer.informListeners(e.Result.Confidence + "#" + e.Result.Text);
-            }
+            //if (e.Result.Confidence >= voiceController.RecognitionConfidence)
+            //{
+            voiceServer.informListeners(e.Result.Confidence + "#" + e.Result.Text);
+            //}
         }
 
         void Sensor_ColorFrameReady(object sender, ColorImageFrameReadyEventArgs e)
