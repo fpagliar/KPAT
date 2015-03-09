@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 namespace WpfInterface
 {
@@ -18,13 +19,13 @@ namespace WpfInterface
             String[] dataVoice = ((String)data).Split(new Char[] {'#'});
             String confidence = dataVoice[0];
             String action = dataVoice[1].ToUpper();
-
+            Debug.WriteLine(confidence + ":" + action);
             if (Double.Parse(confidence).CompareTo(confidenceThreshold) > 0)
             {
                 switch (action)
                 {
-                    case "STOP": toggleStopAction(); break;
-                    case "START":
+//                    case "STOP": toggleStopAction(); break;
+                    case "PLAY":
                     case "PAUSE":
                         toggleStartAction(); break;
                     case "SET UP":
@@ -70,31 +71,37 @@ namespace WpfInterface
         {
             foreach (VlcController controller in container.getControllers())
                 if (controller != null)
-                    controller.stop();
+                    controller.setup();
 
-            foreach (VlcController controller in container.getControllers())
-                if (controller != null)
-                {
-                    controller.togglePlayPause();
-                    controller.togglePlayPause();
-                }
+            //Thread.Sleep(500);
+            //foreach (VlcController controller in container.getControllers())
+            //    if (controller != null)
+            //        controller.togglePlayPause();
 
-            foreach (VlcController controller in container.getControllers())
-                if (controller != null)
-                    controller.stop();
+            //Thread.Sleep(500);
+            //foreach (VlcController controller in container.getControllers())
+            //    if (controller != null)
+            //        controller.stop();
 
+            //Thread.Sleep(500);
+            //foreach (VlcController controller in container.getControllers())
+            //    if (controller != null)
+            //        controller.togglePlayPause();
 
-            foreach (VlcController controller in container.getControllers())
-                if (controller != null)
-                    controller.togglePlayPause();
+            //Thread.Sleep(500);
+            //foreach (VlcController controller in container.getControllers())
+            //    if (controller != null)
+            //        controller.fullVolume();
 
-            foreach (VlcController controller in container.getControllers())
-                if (controller != null)
-                    controller.fullVolume();
+            //Thread.Sleep(500);
+            //foreach (VlcController controller in container.getControllers())
+            //    if (controller != null)
+            //        controller.normal();
 
-            foreach (VlcController controller in container.getControllers())
-                if (controller != null)
-                    controller.stop();
+            //Thread.Sleep(500);
+            //foreach (VlcController controller in container.getControllers())
+            //    if (controller != null)
+            //        controller.stop();
             container.setUpRecognized();
         }
     }

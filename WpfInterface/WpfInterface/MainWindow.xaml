@@ -14,7 +14,9 @@
                 <MenuItem Header="Set Server IP" Click="mnuServerip"/>
                 <MenuItem Header="Set Bucket Offset" Click="mnuBucketoffset"/>
                 <MenuItem Header="Set Bucket media size" Click="mnuBucketMediaSize"/>
-                <MenuItem Header="Set Gesture Precision" Click="mnuGestureprecision"/>
+                <MenuItem Header="Set Faster Gesture Precision" Click="mnuFasterGestureprecision"/>
+                <MenuItem Header="Set Normal Gesture Precision" Click="mnuNormalGestureprecision"/>
+                <MenuItem Header="Set Slower Gesture Precision" Click="mnuSlowerGestureprecision"/>
                 <Separator />
                 <MenuItem Header="_Exit" Click="mnuExit"/>
             </MenuItem>
@@ -105,5 +107,8 @@
         <Button x:Name="fasterEnabler" Content="" Grid.Column="2" HorizontalAlignment="Left" Margin="305,-16,-236,0" VerticalAlignment="Top" Width="15" Height="15" Background="Black" Click="FasterButton_Click"/>
         <Button x:Name="normalEnabler" Content="" Grid.Column="2" HorizontalAlignment="Left" Margin="305,91,-236,0" VerticalAlignment="Top" Width="15" Height="15" Background="Black" Click="NormalButton_Click"/>
         <Button x:Name="slowerEnabler" Content="" Grid.Column="2" HorizontalAlignment="Left" Margin="305,204,-236,0" VerticalAlignment="Top" Width="15" Height="15" Background="Black" Click="SlowerButton_Click"/>
+        <ProgressBar x:Name="MovementDiff" HorizontalAlignment="Left" Height="31" Margin="-24,429,-51,-160" VerticalAlignment="Top" Width="575" Grid.ColumnSpan="3" Foreground="Red" Maximum="1000" SmallChange="1"/>
+        <ProgressBar x:Name="MovementDiffClose" HorizontalAlignment="Left" Height="31" Margin="-24,429,-51,-160" VerticalAlignment="Top" Width="575" Grid.ColumnSpan="3" Maximum="1000" SmallChange="1" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="#FFDCFF00"/>
+        <ProgressBar x:Name="MovementPrecision" HorizontalAlignment="Left" Height="31" Margin="-24,429,-51,-160" VerticalAlignment="Top" Width="575" Grid.ColumnSpan="3" Maximum="1000" SmallChange="1" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="#FF17FF00"/>
     </Grid>
 </Window>

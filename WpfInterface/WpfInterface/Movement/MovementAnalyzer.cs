@@ -10,7 +10,7 @@ namespace WpfInterface
 {
     class MovementAnalyzer : ClientListener
     {
-        public const int DEFAULT_THRESHOLD = 210;
+        public const int DEFAULT_THRESHOLD = 120;
 
 
         private SkeletonRecording movement;
@@ -18,12 +18,16 @@ namespace WpfInterface
         private int threshold = DEFAULT_THRESHOLD;
         private Action action;
         private DateTime lastUse;
+        private MainWindow.Movement movementType;
+        private MainWindow container;
 
-        public MovementAnalyzer(SkeletonRecording movement, string tag, Action action)
+        public MovementAnalyzer(SkeletonRecording movement, string tag, Action action, MainWindow.Movement movementType, MainWindow container)
         {
             stream = new SkeletonRecording(tag, movement.size());
             this.movement = movement;
+            this.movementType = movementType;
             this.action = action;
+            this.container = container;
             lastUse = DateTime.Now;
         }
 
@@ -50,6 +54,7 @@ namespace WpfInterface
             if (stream.size() == movement.size())
             {
                 float diff = SkeletonUtils.difference(stream, movement);
+                container.setMovementValue(movementType, diff * 250.0 / threshold);
                 if (lastUse.AddSeconds(5) < DateTime.Now)
                 {
                     if (diff < threshold)

@@ -26,10 +26,12 @@ namespace WpfInterface
     /// </summary>
     public partial class MainWindow : Window
     {
-        private const String defaultVLCIp = "192.168.0.88";
-        private const String defaultVLCPort = "999";
-        private static int index = 9;
+//        private const String defaultVLCIp = "192.168.0.88";
+        private const String defaultVLCPort = "9999";
+        private static string[] defaultIps = { "192.168.0.28", "192.168.0.29", "192.168.0.33", "192.168.0.44" };
+        private static int index = 0;
         private const string DEFAULT_SERVER_IP = "127.0.0.1";
+        private const int progressBarDelta = 100;
 
         private static TcpClient skeletonClient;
         private static TcpClient voiceClient;
@@ -61,9 +63,15 @@ namespace WpfInterface
             NORMAL = 2
         }
         MovementAnalyzer[] movements = new MovementAnalyzer[3];
+        double[] lastMovementValues = new double[3];
+        int[] movementThresholds = {100, 100, 100};
 
         private ArmAnalyzerListener rightArmAnalyzer;
         private ArmAnalyzerListener leftArmAnalyzer;
+
+        private int gesturePrecision = 250;
+        private int bucketPrecision = PositionAnalyzer.DEFAULT_OFFSET;
+        private int bucketMedia = PositionAnalyzer.DEFAULT_MEDIA;
 
         public MainWindow()
         {
@@ -166,8 +174,8 @@ namespace WpfInterface
                 recordingStream = new CurrentRecording();
                 skeletonClient.subscribe(recordingStream);
 
-                rightArmAnalyzer = new ArmAnalyzerListener(PositionAnalyzer.DEFAULT_MEDIA, PositionAnalyzer.DEFAULT_OFFSET, true, this);
-                leftArmAnalyzer = new ArmAnalyzerListener(PositionAnalyzer.DEFAULT_MEDIA, PositionAnalyzer.DEFAULT_OFFSET, false, this);
+                rightArmAnalyzer = new ArmAnalyzerListener(bucketMedia, bucketPrecision, true, this);
+                leftArmAnalyzer = new ArmAnalyzerListener(bucketMedia, bucketPrecision, false, this);
             }
             else
             {
@@ -224,6 +232,9 @@ namespace WpfInterface
                 for (int i = 0; i < movements.Length; i++)
                     if (movements[i] != null)
                         skeletonClient.subscribe(movements[i]);
+                skeletonClient.subscribe(new SkeletonListener(skeletonCanvas));
+                recordingStream = new CurrentRecording();
+                skeletonClient.subscribe(recordingStream);
             }
         }
 
@@ -278,6 +289,35 @@ namespace WpfInterface
                 System.Windows.Application.Current.Dispatcher.BeginInvoke(new ThreadStart(() => voiceControl.Fill = new SolidColorBrush(Colors.Green)));
                 bucketsEnabled = true;
             }
+        }
+
+        public void setMovementValue(Movement mov, double val)
+        {
+            // Exact movement is 250
+            // Close movement is 350
+            if (val > 1000)
+                val = 1000;
+            lastMovementValues[(int)mov] = val;
+            double min = val;
+            foreach (Movement pos in Enum.GetValues(typeof(Movement))) {
+                double actual = lastMovementValues[(int)pos];
+                if(actual < min && actual > 0)
+                    min = actual;
+            }
+            System.Windows.Application.Current.Dispatcher.BeginInvoke(new ThreadStart(() => MovementDiff.Value = min));
+            if (min < gesturePrecision + progressBarDelta)
+            {
+                System.Windows.Application.Current.Dispatcher.BeginInvoke(new ThreadStart(() => MovementDiffClose.Value = min));
+            }
+            else
+            {
+                System.Windows.Application.Current.Dispatcher.BeginInvoke(new ThreadStart(() => MovementDiffClose.Value = gesturePrecision + progressBarDelta));
+            }
+            if (min < gesturePrecision)
+                System.Windows.Application.Current.Dispatcher.BeginInvoke(new ThreadStart(() => MovementPrecision.Value = min));
+            else
+                System.Windows.Application.Current.Dispatcher.BeginInvoke(new ThreadStart(() => MovementPrecision.Value = gesturePrecision));
+
         }
 
         #region Button Actions
@@ -351,8 +391,8 @@ namespace WpfInterface
                     Colors.Black, skeletonClient));
 
                 // Loading movement to analyzer
-                movements[(int)Movement.FASTER] = new MovementAnalyzer(movement, "FasterMovementAnalyzerStream",
-                    new FasterAction(this));
+                movements[(int)Movement.FASTER] = new MovementAnalyzer(movement, "FasterMovementAnalyzerStream", new FasterAction(this), Movement.FASTER, this);
+                movements[(int)Movement.FASTER].setThreshold(movementThresholds[(int)Movement.FASTER]);
                 skeletonClient.subscribe(movements[(int)Movement.FASTER]);
                 fasterEnabler.Background = new SolidColorBrush(Colors.Red);
             }
@@ -377,7 +417,8 @@ namespace WpfInterface
 
                 // Loading movement to analyzer
                 movements[(int)Movement.SLOWER] = new MovementAnalyzer(movement, "SlowerMovementAnalyzerStream",
-                    new SlowerAction(Array.AsReadOnly<VlcController>(allControllers)));
+                    new SlowerAction(Array.AsReadOnly<VlcController>(allControllers)), Movement.SLOWER, this);
+                movements[(int)Movement.SLOWER].setThreshold(movementThresholds[(int)Movement.SLOWER]);
                 skeletonClient.subscribe(movements[(int)Movement.SLOWER]);
                 slowerEnabler.Background = new SolidColorBrush(Colors.Red);
             }
@@ -402,7 +443,8 @@ namespace WpfInterface
 
                 // Loading movement to analyzer
                 movements[(int)Movement.NORMAL] = new MovementAnalyzer(movement, "NormalMovementAnalyzerStream",
-                    new NormalSpeedAction(Array.AsReadOnly<VlcController>(allControllers)));
+                    new NormalSpeedAction(Array.AsReadOnly<VlcController>(allControllers)), Movement.NORMAL, this);
+                movements[(int)Movement.NORMAL].setThreshold(movementThresholds[(int)Movement.NORMAL]);
                 skeletonClient.subscribe(movements[(int)Movement.NORMAL]);
 
                 normalEnabler.Background = new SolidColorBrush(Colors.Red);
@@ -446,6 +488,7 @@ namespace WpfInterface
                     rightArmAnalyzer.setOffset(n);
                 if(leftArmAnalyzer != null)
                     leftArmAnalyzer.setOffset(n);
+                bucketPrecision = n;
             }
             else
             {
@@ -458,12 +501,13 @@ namespace WpfInterface
             String resp = Microsoft.VisualBasic.Interaction.InputBox("Enter the media size between 1 and 100", "KPAT", PositionAnalyzer.DEFAULT_MEDIA.ToString());
             int n;
             bool isNumeric = int.TryParse(resp, out n);
-            if (isNumeric && n > 0 && n < 100)
+            if (isNumeric && n > 0 && n < PositionAnalyzer.MAX_MEDIA)
             {
                 if (rightArmAnalyzer != null)
                     rightArmAnalyzer.setMediaSize(n);
                 if (leftArmAnalyzer != null)
                     leftArmAnalyzer.setMediaSize(n);
+                bucketMedia = n;
             }
             else
             {
@@ -471,17 +515,27 @@ namespace WpfInterface
             }
         }
 
+        private void mnuFasterGestureprecision(object sender, RoutedEventArgs e)
+        {
+            mnuGestureprecision(movements[(int)Movement.FASTER]);
+        }
+        private void mnuNormalGestureprecision(object sender, RoutedEventArgs e)
+        {
+            mnuGestureprecision(movements[(int)Movement.NORMAL]);
+        }
+        private void mnuSlowerGestureprecision(object sender, RoutedEventArgs e)
+        {
+            mnuGestureprecision(movements[(int)Movement.SLOWER]);
+        }
 
-        private void mnuGestureprecision(object sender, RoutedEventArgs e)
+        private void mnuGestureprecision(MovementAnalyzer analyzer)
         {
             String resp = Microsoft.VisualBasic.Interaction.InputBox("Enter the Gesture Precision", "KPAT", MovementAnalyzer.DEFAULT_THRESHOLD.ToString());
             int n;
             bool isNumeric = int.TryParse(resp, out n);
             if (isNumeric)
             {
-                foreach (MovementAnalyzer analyzer in movements)
-                    if (analyzer != null)
-                        analyzer.setThreshold(n);
+                analyzer.setThreshold(n);
             }
             else {
                 System.Windows.MessageBox.Show("Error - You Have Provided an Invalid Value", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -550,8 +604,8 @@ namespace WpfInterface
 
         private bool enable(BucketPosition pos)
         {
-            String IP = Microsoft.VisualBasic.Interaction.InputBox("Enter the IP and Port Ex: 192.168.0.1:9999", "KPAT", defaultVLCIp + ":" + defaultVLCPort + index);
-            index--;
+            String IP = Microsoft.VisualBasic.Interaction.InputBox("Enter the IP and Port Ex: 192.168.0.1:9999", "KPAT", defaultIps[index] + ":" + defaultVLCPort);
+            index++;
             String[] IPs = IP.Split(':');
             if (IPs.Length != 2)
             {

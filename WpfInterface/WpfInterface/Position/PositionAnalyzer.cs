@@ -12,7 +12,7 @@ namespace WpfInterface
     {
         public const int MAX_MEDIA = 100;
         public const int DEFAULT_MEDIA = 10;
-        public const int DEFAULT_OFFSET = 7;
+        public const int DEFAULT_OFFSET = 12;
 
         private const float bucket1 = 38;
         private const float bucket2 = 90;

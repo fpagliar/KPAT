@@ -1,7 +1,9 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 
 namespace WpfInterface
 {
@@ -17,6 +19,7 @@ namespace WpfInterface
 
         private int currentVolLevel;
         private bool stopped;
+        private DateTime lastCommand;
 
         public VlcController(string ip, int port)
         {
@@ -26,6 +29,7 @@ namespace WpfInterface
             stopped = true;
             currentVolLevel = 0;
             this.port = port;
+            lastCommand = DateTime.Now;
         }
 
         //public void play()
@@ -39,6 +43,24 @@ namespace WpfInterface
         //        Debug.WriteLine(port + "not playing on unstopped");
         //    }
         //}
+
+        public void setup()
+        {
+            runCommandAndGetAnswer("stop");
+            Thread.Sleep(100);
+            runCommandAndGetAnswer("pause");
+            Thread.Sleep(100); 
+            runCommandAndGetAnswer("stop");
+            Thread.Sleep(100);
+            runCommandAndGetAnswer("play");
+            Thread.Sleep(100);
+            normal();
+            Thread.Sleep(100);
+            fullVolume();
+            Thread.Sleep(100);
+            runCommandAndGetAnswer("stop");
+            stopped = true;
+        }
 
         public void stop()
         {
@@ -177,14 +199,24 @@ namespace WpfInterface
 
         private string runCommandAndGetAnswer(string command)
         {
-            Debug.WriteLine(port + " will run " + command);
+            if (lastCommand.AddMilliseconds(100) > DateTime.Now)
+            {
+                return "";
+            }
+            lastCommand = DateTime.Now;
+
+            //Debug.WriteLine(port + " will run " + command);
             byte[] bytes = Encoding.ASCII.GetBytes(command + "\n");
             serverStream.Write(bytes, 0, bytes.Length);
             serverStream.Flush();
             byte[] read = new byte[1024];
-            int length = serverStream.Read(read, 0, read.Length);
-            string ans = Encoding.ASCII.GetString(read, 0, length);
-            Debug.WriteLine(port + " answered \n" + ans);
+            string ans = "";
+            while (serverStream.DataAvailable)
+            {
+                int length = serverStream.Read(read, 0, read.Length);
+                ans += Encoding.ASCII.GetString(read, 0, length);
+            }
+            //Debug.WriteLine(port + " answered \n" + ans);
             return ans;
         }
     }
