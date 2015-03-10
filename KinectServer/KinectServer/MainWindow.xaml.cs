@@ -48,14 +48,13 @@ namespace KinectServer
 
                 voiceController = new VoiceController();
                 voiceController.SpeechRecognized += Recognizer_SpeechRecognized;
-                //voiceController.RecognitionConfidence = 0.50;
 
                 List<String> phrases = new List<string>();
-                phrases.Add("SET UP");    // TODO: properties file
-                phrases.Add("STOP");    // TODO: properties file
-                phrases.Add("PAUSE");   // TODO: properties file
-                phrases.Add("PLAY");   // TODO: properties file
-                phrases.Add("BUCKETS"); // TODO: properties file
+                phrases.Add("SET UP");  
+                phrases.Add("STOP");    
+                phrases.Add("PAUSE");   
+                phrases.Add("PLAY");   
+                phrases.Add("BUCKETS"); 
 
                 sensor.Start();
                 sensor.ElevationAngle = 10;
@@ -67,10 +66,7 @@ namespace KinectServer
 
         void Recognizer_SpeechRecognized(object sender, Microsoft.Speech.Recognition.SpeechRecognizedEventArgs e)
         {
-            //if (e.Result.Confidence >= voiceController.RecognitionConfidence)
-            //{
             voiceServer.informListeners(e.Result.Confidence + "#" + e.Result.Text);
-            //}
         }
 
         void Sensor_ColorFrameReady(object sender, ColorImageFrameReadyEventArgs e)
@@ -135,7 +131,7 @@ namespace KinectServer
                     {
                         sensor.ElevationAngle = (int)e.NewValue;
                     }
-                    catch (Exception) { } // It may fail, fuck it.
+                    catch (Exception) { } 
 
                     System.Timers.Timer myTimer = new System.Timers.Timer();
                     myTimer.Elapsed += new ElapsedEventHandler(ReenableSlider);
