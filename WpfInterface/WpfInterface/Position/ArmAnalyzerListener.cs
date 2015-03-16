@@ -31,7 +31,9 @@ namespace WpfInterface
                 return;
             }
             Color color = analyzer.checkPosition(skeleton);
-            SkeletonUtils.redraw(skelcanvas, skeleton, "armdsdfanalyzer", color);
+            Application.Current.Dispatcher.BeginInvoke(new ThreadStart(() =>
+                SkeletonUtils.DrawSkeleton(skelcanvas, skeleton, color, "armdsdfanalyzer")));
+            //SkeletonUtils.redraw(skelcanvas, skeleton, "armdsdfanalyzer", color);
         }
 
         public void setMediaSize(int value)
